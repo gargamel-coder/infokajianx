@@ -1,0 +1,2549 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
+<meta name="theme-color" content="#1B5E38"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="Info Kajian"/>
+<title>Info Kajian</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+<!-- Firebase SDK -->
+<script>var _fbLoadFailed=false;</script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js" onerror="_fbLoadFailed=true"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js" onerror="_fbLoadFailed=true"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js" onerror="_fbLoadFailed=true"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --p:#1B5E38;--p2:#2E7D52;--p3:#3D9970;
+  --pl:#EAF5EE;--pm:#B8DFC8;--ps:#F0FAF4;
+  --gold:#D4A017;
+  --bg:#F2F7F4;--card:#fff;
+  --text:#1A2B22;--sub:#3D5C47;--muted:#6B8575;
+  --border:#D4E8DA;--border2:#E8F4EC;
+  --danger:#C62828;--warn:#BF360C;--info:#1565C0;
+  --font:'Plus Jakarta Sans',sans-serif;
+  --r16:16px;--r12:12px;--r10:10px;
+  --shadow:0 2px 16px rgba(27,94,56,.1);
+  --shadow2:0 4px 24px rgba(27,94,56,.15);
+}
+html,body{height:100%;overflow:hidden}
+@supports(height:100dvh){html,body{height:100dvh}}
+body{font-family:var(--font);color:var(--text);background:var(--bg);-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+button{font-family:var(--font);cursor:pointer;border:none;outline:none;background:none;color:inherit;-webkit-tap-highlight-color:transparent}
+input,textarea,select{font-family:var(--font);outline:none;border:none;background:none}
+img{display:block}
+
+/* APP SHELL */
+#app{max-width:430px;margin:0 auto;height:100vh;height:100dvh;background:var(--bg);position:relative;overflow:hidden;display:flex;flex-direction:column}
+
+/* SCREENS */
+.screen{display:none;flex-direction:column;flex:1;min-height:0;overflow:hidden;position:relative}
+.screen.active{display:flex;flex-direction:column}
+.screen-content{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;padding-bottom:calc(12px + env(safe-area-inset-bottom,0px));overscroll-behavior-y:contain}
+
+/* BOTTOM NAV */
+#bnav,#bnav2,#bnav3,#bnav4{display:none!important}
+#gnav{flex-shrink:0;background:#fff;border-top:1px solid var(--border);display:flex;z-index:90;padding-bottom:env(safe-area-inset-bottom,0px);box-shadow:0 -2px 16px rgba(27,94,56,.08);-webkit-backface-visibility:hidden}
+#gnav.hidden{display:none}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:9px 4px 7px;gap:3px;font-size:10px;font-weight:600;color:var(--muted);cursor:pointer;transition:color .2s;position:relative}
+.nav-item.active{color:var(--p)}
+.nav-item svg{width:22px;height:22px;stroke-width:2}
+.nav-badge{position:absolute;top:6px;right:calc(50% - 14px);width:8px;height:8px;background:var(--danger);border-radius:50%;border:2px solid #fff}
+
+/* HEADER */
+.hdr{position:sticky;top:0;z-index:80;background:#fff;border-bottom:1px solid var(--border);padding:0 16px;display:flex;align-items:center;gap:10px;min-height:54px}
+.hdr-title{font-size:16px;font-weight:700;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hdr-back{width:36px;height:36px;display:flex;align-items:center;justify-content:center;color:var(--p);border-radius:10px;flex-shrink:0}
+.hdr-back:active{background:var(--pl)}
+.hdr-action{width:36px;height:36px;display:flex;align-items:center;justify-content:center;border-radius:10px;color:var(--p)}
+.hdr-action:active{background:var(--pl)}
+
+/* BUTTONS */
+.btn{border-radius:var(--r12);padding:14px 20px;font-weight:700;font-size:15px;width:100%;display:flex;align-items:center;justify-content:center;gap:8px;transition:transform .15s,opacity .15s;cursor:pointer}
+.btn:active{transform:scale(.98);opacity:.9}
+.btn-p{background:var(--p);color:#fff}
+.btn-o{background:transparent;border:2px solid var(--p);color:var(--p)}
+.btn-d{background:var(--danger);color:#fff}
+.btn-sm{padding:9px 16px;font-size:13px;border-radius:var(--r10);width:auto}
+.btn-xs{padding:6px 12px;font-size:12px;border-radius:8px;width:auto}
+.btn:disabled{opacity:.6;cursor:not-allowed;transform:none}
+
+/* INPUTS */
+.inp{background:var(--pl);border:1.5px solid var(--border);border-radius:var(--r12);padding:13px 16px;font-size:15px;color:var(--text);width:100%;transition:border .2s,background .2s}
+.inp:focus{border-color:var(--p);background:#fff}
+.inp::placeholder{color:var(--muted)}
+select.inp{-webkit-appearance:none;-moz-appearance:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%231B5E38' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:40px}
+input[type="date"],input[type="time"]{-webkit-appearance:none;-moz-appearance:none;appearance:none;min-height:48px}
+.lbl{font-size:13px;font-weight:600;color:var(--muted);margin-bottom:6px;display:block}
+.field{margin-bottom:14px}
+
+/* TAGS */
+.tag{display:inline-flex;align-items:center;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700}
+.tag-g{background:var(--pl);color:var(--p)}
+.tag-o{background:#FFF3E0;color:#BF360C}
+.tag-r{background:#FFEBEE;color:#B71C1C}
+.tag-x{background:#F0F0F0;color:#555}
+.tag-b{background:#E3F2FD;color:#1565C0}
+
+/* CARDS */
+.card{background:var(--card);border-radius:var(--r16);box-shadow:var(--shadow)}
+.kcard{background:var(--card);border-radius:var(--r16);padding:16px;border:1px solid var(--border);cursor:pointer;transition:transform .15s,box-shadow .15s;margin-bottom:12px}
+.kcard:active{transform:scale(.99);box-shadow:var(--shadow2)}
+
+/* MODAL */
+.overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.55);z-index:200;display:none;align-items:flex-end;justify-content:center;animation:ov-in .2s ease;-webkit-overflow-scrolling:touch}
+.overlay.open{display:flex}
+@keyframes ov-in{from{opacity:0}to{opacity:1}}
+.sheet{background:#fff;border-radius:24px 24px 0 0;width:100%;max-width:430px;max-height:88vh;max-height:88dvh;overflow-y:auto;padding:16px 20px calc(32px + env(safe-area-inset-bottom,0px));animation:sh-in .3s ease;-webkit-overflow-scrolling:touch}
+@keyframes sh-in{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.sheet-handle{width:40px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 18px}
+
+/* TOAST */
+#toast{position:fixed;top:calc(16px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);padding:12px 22px;border-radius:14px;font-size:14px;font-weight:600;z-index:999;max-width:calc(100vw - 40px);text-align:center;display:none;box-shadow:0 8px 32px rgba(0,0,0,.25);animation:t-in .3s ease;pointer-events:none;word-break:break-word}
+#toast.show{display:block}
+#toast.t-s{background:var(--p);color:#fff}
+#toast.t-e{background:var(--danger);color:#fff}
+#toast.t-i{background:var(--info);color:#fff}
+#toast.t-w{background:var(--warn);color:#fff}
+@keyframes t-in{from{opacity:0;top:8px}to{opacity:1;top:16px}}
+
+/* SPINNER */
+.spin{width:24px;height:24px;border:3px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spi .7s linear infinite;margin:0 auto}
+.spin-g{border-color:var(--pl);border-top-color:var(--p)}
+@keyframes spi{to{transform:rotate(360deg)}}
+
+/* FADE IN */
+.fi{animation:fi .3s ease}
+@keyframes fi{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* MISC */
+.divider{height:1px;background:var(--border);margin:16px 0}
+.empty-state{display:flex;flex-direction:column;align-items:center;gap:14px;padding:48px 20px;text-align:center}
+.empty-icon{width:72px;height:72px;border-radius:50%;background:var(--pl);display:flex;align-items:center;justify-content:center;margin:0 auto}
+.empty-icon svg{width:32px;height:32px;stroke:var(--p);stroke-width:1.5}
+.section-title{font-size:17px;font-weight:800}
+.stat-card{background:var(--card);border-radius:var(--r16);padding:14px 12px;border:1px solid var(--border);cursor:pointer;transition:transform .15s;flex:1;text-align:center}
+.stat-card:active{transform:scale(.97)}
+
+/* PRAYER */
+.prayer-row{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-radius:12px;margin-bottom:4px;transition:all .3s}
+.prayer-active{background:var(--p);color:#fff}
+.prayer-inactive{background:var(--pl)}
+
+/* AUTOCOMPLETE */
+.ac-wrap{position:relative}
+.ac-list{position:absolute;top:calc(100% + 4px);left:0;right:0;background:#fff;border:1.5px solid var(--border);border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.12);z-index:60;overflow:hidden;display:none;max-height:200px;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.ac-list.open{display:block}
+.ac-item{padding:12px 16px;font-size:14px;cursor:pointer;border-bottom:1px solid #f5f5f5}
+.ac-item:last-child{border-bottom:none}
+.ac-item:hover,.ac-item:active{background:var(--pl)}
+.ac-item-sub{font-size:11px;color:var(--muted);margin-top:2px}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:0}
+
+/* MOBILE RESPONSIVE */
+@media(max-width:374px){
+  .nav-item{padding:7px 2px 5px;font-size:9px}
+  .nav-item svg{width:20px;height:20px}
+  .hdr{min-height:48px;padding:0 12px}
+  .hdr-title{font-size:15px}
+  .btn{padding:12px 16px;font-size:14px}
+  .section-title{font-size:15px}
+  .kcard{padding:14px}
+}
+@media(max-width:320px){
+  #home-prayer-cards{flex-wrap:wrap}
+  #home-prayer-cards>div{min-width:calc(33.33% - 4px)!important;flex:unset!important}
+}
+
+/* TABS */
+.tabs{display:flex;gap:8px;overflow-x:auto;padding-bottom:2px}
+.tab{padding:8px 16px;font-size:13px;font-weight:600;border-radius:10px;cursor:pointer;transition:all .2s;color:var(--muted);white-space:nowrap;flex-shrink:0}
+.tab.active{background:var(--p);color:#fff}
+
+/* SEARCH BAR HOME */
+.search-box{background:#fff;border-radius:16px;border:1.5px solid var(--border);overflow:visible;box-shadow:var(--shadow);position:relative}
+.search-row{display:flex;align-items:center;gap:10px;padding:12px 14px;cursor:pointer}
+.search-row:active{background:var(--ps)}
+.search-row-label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}
+.search-row-val{font-size:14px;color:var(--text);margin-top:2px}
+.search-row-val.empty{color:var(--muted)}
+.search-sep{height:1px;background:var(--border);margin:0 14px}
+
+/* MENU LIST */
+.menu-list{background:#fff;border-radius:var(--r16);border:1px solid var(--border);overflow:hidden;margin-bottom:12px}
+.menu-item{display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--border2);cursor:pointer;width:100%;background:none;transition:background .15s}
+.menu-item:last-child{border-bottom:none}
+.menu-item:active{background:var(--ps)}
+.menu-icon{width:36px;height:36px;border-radius:10px;background:var(--pl);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.menu-icon svg{width:18px;height:18px;stroke:var(--p)}
+.menu-label{flex:1;font-size:14px;font-weight:600;text-align:left}
+.menu-badge{font-size:13px;font-weight:700;color:var(--p)}
+
+/* ADMIN STAT */
+.admin-stat{background:rgba(255,255,255,.15);border-radius:12px;padding:10px 8px;text-align:center}
+
+/* COMPASS */
+#compass-wrap{position:relative;width:260px;height:260px;margin:0 auto}
+#compass-base,#compass-needle{position:absolute;inset:0;width:100%;height:100%}
+#compass-needle{transition:transform .4s ease;transform-origin:50% 50%}
+
+/* ALERT BANNER */
+.alert-banner{border-radius:12px;padding:12px 14px;display:flex;gap:8px;align-items:flex-start;margin-bottom:14px}
+.alert-banner svg{flex-shrink:0;margin-top:1px}
+.alert-o{background:#FFF3E0}
+.alert-r{background:#FFEBEE}
+.alert-g{background:var(--pl)}
+.alert-b{background:#E3F2FD}
+
+/* VERIFIED CHECK */
+.v-check{font-size:10px;color:var(--p);background:var(--pl);padding:2px 7px;border-radius:20px;font-weight:700}
+
+/* ROLE PILL */
+.role-pill{display:inline-block;padding:2px 10px;border-radius:20px;font-size:11px;font-weight:700;background:rgba(255,255,255,.2);color:#fff}
+
+/* QR PATTERN */
+.qr-svg{display:block;margin:0 auto}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- NOSCRIPT FALLBACK -->
+  <noscript>
+    <div style="padding:40px 20px;text-align:center;background:#fff;border-radius:16px;margin:20px;box-shadow:0 2px 16px rgba(0,0,0,.1)">
+      <p style="font-size:18px;font-weight:700;color:#1B5E38;margin-bottom:12px">JavaScript Diperlukan</p>
+      <p style="font-size:14px;color:#6B8575;line-height:1.6">Buka file ini di browser <strong>Safari</strong> atau <strong>Chrome</strong> untuk menggunakan aplikasi Info Kajian.</p>
+    </div>
+  </noscript>
+
+  <!-- OPEN IN BROWSER BANNER (shown by default, hidden by JS) -->
+  <div id="open-browser-banner" style="position:fixed;top:0;left:0;right:0;z-index:9999;background:linear-gradient(135deg,#C62828,#E53935);padding:20px 20px;padding-top:calc(20px + env(safe-area-inset-top,0px));text-align:center;box-shadow:0 4px 24px rgba(0,0,0,.3)">
+    <p style="color:#fff;font-size:16px;font-weight:800;margin-bottom:6px">&#9888; Buka di Safari</p>
+    <p style="color:rgba(255,255,255,.9);font-size:13px;line-height:1.5">File ini harus dibuka di browser.<br>Tap ikon <b>Share</b> di bawah lalu pilih <b>"Open in Safari"</b></p>
+  </div>
+  <script>try{document.getElementById('open-browser-banner').style.display='none';}catch(e){}</script>
+
+  <!-- TOAST -->
+  <div id="toast"></div>
+
+  <!-- ════ SCREEN: HOME ════ -->
+  <div id="scr-home" class="screen active">
+    <div class="screen-content">
+      <!-- Hero -->
+      <div id="home-hero" style="background:var(--p);padding:20px 20px 0">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:18px">
+          <div>
+            <div style="display:flex;align-items:center;gap:10px">
+              <div style="width:36px;height:36px;background:rgba(255,255,255,.2);border-radius:10px;display:flex;align-items:center;justify-content:center">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" style="width:20px;height:20px"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+              </div>
+              <span style="font-size:18px;font-weight:800;color:#fff">Info Kajian</span>
+            </div>
+            <span style="font-size:11px;color:rgba(255,255,255,.7);font-weight:500;margin-top:4px;margin-left:46px;display:block">Temukan kajian terdekat</span>
+          </div>
+          <button id="home-notif-btn" class="hdr-action" style="background:rgba(255,255,255,.2)" onclick="goNotif()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" style="width:19px;height:19px"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            <div id="home-notif-badge" class="nav-badge" style="display:none;top:4px;right:4px"></div>
+          </button>
+        </div>
+        <div id="home-loc-text" style="font-size:12px;color:rgba(255,255,255,.75);margin-bottom:3px">Mendapatkan lokasi...</div>
+        <div id="home-greet" style="font-size:21px;font-weight:800;color:#fff;line-height:1.25;padding-bottom:20px">Assalamualaikum</div>
+        <div id="home-loc-btn-wrap" style="padding-bottom:16px;display:none">
+          <button onclick="getLocation()" style="background:rgba(255,255,255,.2);color:#fff;border-radius:10px;padding:7px 14px;font-size:13px;font-weight:700;display:flex;align-items:center;gap:6px">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            Aktifkan lokasi
+          </button>
+          <p id="home-loc-hint" style="font-size:11px;color:rgba(255,255,255,.6);margin-top:6px">Atau ketik nama kota di kolom pencarian</p>
+        </div>
+      </div>
+      <!-- Search -->
+      <div id="home-search-wrap" style="padding:14px 16px 0">
+        <div class="search-box">
+          <div style="position:relative">
+            <div class="search-row" style="cursor:text">
+              <svg viewBox="0 0 24 24" fill="none" stroke="var(--p)" stroke-width="2" style="width:18px;height:18px;flex-shrink:0"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              <div style="flex:1">
+                <div class="search-row-label">Lokasi</div>
+                <input id="home-loc-inp" placeholder="Kota atau kecamatan..." autocomplete="off"
+                  style="font-size:14px;color:var(--text);width:100%;background:transparent;border:none;outline:none;padding:0;font-family:var(--font)"
+                  oninput="onLocInput()" onfocus="onLocInput()"/>
+              </div>
+              <button id="home-loc-clear" onclick="clearLocFilter()" style="display:none;color:var(--muted);padding:4px;flex-shrink:0">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:15px;height:15px"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              </button>
+            </div>
+            <div id="loc-ac" class="ac-list" style="position:absolute;top:100%;left:0;right:0;z-index:150"></div>
+          </div>
+          <div class="search-sep"></div>
+          <div class="search-row" id="home-date-row" onclick="openDatePicker()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="var(--p)" stroke-width="2" style="width:18px;height:18px;flex-shrink:0"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            <div style="flex:1"><div class="search-row-label">Tanggal</div><div id="home-date-val" class="search-row-val empty">Pilih tanggal</div></div>
+            <button id="home-date-clear" onclick="event.stopPropagation();clearSearchDate()" style="color:var(--muted);display:none;padding:4px">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+          <div class="search-sep"></div>
+          <div style="position:relative;display:flex;gap:8px;padding:6px 6px 6px">
+            <div style="flex:1;position:relative">
+              <input id="home-q" class="inp" style="width:100%;border-radius:10px;padding:10px 14px;font-size:14px" placeholder="Cari ustadz atau judul..." autocomplete="off" oninput="onSearchSuggest('home')" onfocus="onSearchSuggest('home')"/>
+              <div id="home-q-ac" class="ac-list" style="position:absolute;top:100%;left:0;right:0;z-index:200"></div>
+            </div>
+            <button class="btn btn-p btn-sm" onclick="closeSearchAC('home');doHomeSearch()" style="padding:10px 18px;border-radius:10px;flex-shrink:0">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:17px;height:17px"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+      <!-- Search Results inline -->
+      <div id="home-search-results" style="display:none;padding:14px 16px 0">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <div id="home-results-title" class="section-title">Hasil Pencarian</div>
+          <button onclick="clearHomeSearch()" style="font-size:13px;font-weight:700;color:var(--danger)">✕ Reset</button>
+        </div>
+        <div id="home-results-list"></div>
+      </div>
+      <!-- Prayer Times Mini -->
+      <div id="home-prayer-mini" style="padding:14px 16px 0">
+        <div id="home-prayer-cards" style="display:flex;gap:6px;padding-bottom:4px;overflow-x:auto;-webkit-overflow-scrolling:touch;scroll-snap-type:x mandatory"></div>
+      </div>
+      <!-- Nearby -->
+      <div style="padding:20px 16px 0">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+          <div id="nearby-title" class="section-title">Kajian Hari Ini</div>
+          <button onclick="goScreen('kajian')" style="font-size:13px;font-weight:700;color:var(--p);display:flex;align-items:center;gap:3px">
+            Lihat semua
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:14px;height:14px"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+        </div>
+        <div id="nearby-list"></div>
+        <div id="home-guest-cta" style="display:none;margin-top:14px">
+          <div style="background:var(--pl);border-radius:14px;padding:16px;text-align:center">
+            <p style="font-weight:700;font-size:14px;color:var(--p);margin-bottom:6px">Masuk untuk lihat lebih banyak kajian</p>
+            <p style="font-size:13px;color:var(--muted);margin-bottom:12px">Temukan lebih banyak kajian dan fitur lengkap</p>
+            <button class="btn btn-p btn-sm" onclick="goScreen('login')" style="margin:0 auto">Login Sekarang</button>
+          </div>
+        </div>
+      </div>
+      <!-- Upcoming -->
+      <div style="padding:0 16px 8px">
+        <div id="upcoming-section" style="display:none">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;margin-top:4px">
+            <div class="section-title">Kajian Mendatang</div>
+          </div>
+          <div id="upcoming-list"></div>
+        </div>
+      </div>
+    </div>
+    <div id="bnav"></div>
+  </div>
+
+  <!-- ════ SCREEN: LOGIN ════ -->
+  <div id="scr-login" class="screen">
+    <div class="screen-content" style="padding:48px 28px 28px;padding-bottom:48px">
+      <div style="text-align:center;margin-bottom:36px">
+        <div style="width:72px;height:72px;background:var(--p);border-radius:20px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" style="width:36px;height:36px"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+        </div>
+        <h1 style="font-size:26px;font-weight:800;color:var(--p)">Info Kajian</h1>
+        <p style="font-size:14px;color:var(--muted);margin-top:4px">Platform kajian Islam terpercaya</p>
+      </div>
+      <div class="field"><label class="lbl">Email</label><input id="login-email" class="inp" type="email" placeholder="email@contoh.com"/></div>
+      <div class="field" style="position:relative"><label class="lbl">Password</label>
+        <input id="login-pass" class="inp" type="password" placeholder="Masukkan password" style="padding-right:48px"/>
+        <button onclick="togglePass('login-pass',this)" style="position:absolute;right:14px;bottom:14px;color:var(--muted)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+      </div>
+      <button class="btn btn-p" onclick="doLogin()" style="margin-top:4px;margin-bottom:10px"><span id="login-btn-text">Masuk</span></button>
+      <button class="btn btn-o" onclick="goScreen('register')" style="margin-bottom:10px">Daftar Akun Baru</button>
+      <button onclick="goScreen('home')" style="width:100%;text-align:center;color:var(--muted);font-size:14px;padding:10px;font-weight:500">Lanjut sebagai Tamu →</button>
+    </div>
+  </div>
+
+  <!-- ════ SCREEN: REGISTER ════ -->
+  <div id="scr-register" class="screen">
+    <div class="hdr">
+      <button class="hdr-back" onclick="goScreen('login')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:20px;height:20px"><polyline points="15 18 9 12 15 6"/></svg></button>
+      <div class="hdr-title">Daftar Akun</div>
+    </div>
+    <div class="screen-content" style="padding:24px 20px 48px">
+      <div class="field"><label class="lbl">Nama Lengkap</label><input id="reg-name" class="inp" type="text" placeholder="Ahmad Fauzi"/></div>
+      <div class="field"><label class="lbl">Email</label><input id="reg-email" class="inp" type="email" placeholder="email@contoh.com"/></div>
+      <div class="field"><label class="lbl">Password</label><input id="reg-pass" class="inp" type="password" placeholder="Min. 6 karakter"/></div>
+      <div class="field"><label class="lbl">Konfirmasi Password</label><input id="reg-confirm" class="inp" type="password" placeholder="Ulangi password"/></div>
+      <button class="btn btn-p" onclick="doRegister()" style="margin-top:4px"><span id="reg-btn-text">Buat Akun</span></button>
+    </div>
+  </div>
+
+  <!-- ════ SCREEN: KAJIAN LIST ════ -->
+  <div id="scr-kajian" class="screen">
+    <div class="hdr">
+      <div class="hdr-title">Jadwal Kajian</div>
+      <button id="kajian-add-btn" class="hdr-action" style="display:none" onclick="requireContrib(()=>goScreen('submit'))">
+        <svg viewBox="0 0 24 24" fill="none" stroke="var(--p)" stroke-width="2.5" style="width:22px;height:22px"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      </button>
+    </div>
+    <div style="padding:12px 16px;background:#fff;border-bottom:1px solid var(--border)">
+      <div style="display:flex;gap:8px;margin-bottom:10px">
+        <div style="flex:1;position:relative">
+          <svg viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);width:16px;height:16px;pointer-events:none"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <input id="kajian-q" class="inp" style="padding-left:36px" placeholder="Cari kajian atau ustadz..." autocomplete="off" oninput="onSearchSuggest('kajian');renderKajianList()" onfocus="onSearchSuggest('kajian')"/>
+          <div id="kajian-q-ac" class="ac-list" style="position:absolute;top:100%;left:0;right:0;z-index:200"></div>
+        </div>
+        <button id="kajian-date-btn" onclick="openKajianDatePicker()" style="padding:0 14px;background:var(--pl);border-radius:12px;border:1.5px solid var(--border);color:var(--p);font-weight:700;font-size:13px;display:flex;align-items:center;gap:5px;flex-shrink:0">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:15px;height:15px"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          <span id="kajian-date-label">Tanggal</span>
+        </button>
+      </div>
+      <div class="tabs" id="topic-tabs"></div>
+    </div>
+    <div class="screen-content" style="padding:14px 16px 0">
+      <div id="kajian-list"></div>
+    </div>
+    <div id="bnav2"></div>
+  </div>
+
+  <!-- ════ SCREEN: DETAIL ════ -->
+  <div id="scr-detail" class="screen">
+    <div id="detail-hero" style="background:var(--p);padding:48px 20px 24px;position:relative">
+      <button onclick="goBack()" style="position:absolute;top:14px;left:14px;width:36px;height:36px;background:rgba(255,255,255,.2);border-radius:10px;display:flex;align-items:center;justify-content:center;color:#fff">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:18px;height:18px"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <div id="detail-tags" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px"></div>
+      <h1 id="detail-title" style="font-size:20px;font-weight:800;color:#fff;line-height:1.3;margin-bottom:12px"></h1>
+      <div id="detail-meta" style="display:flex;gap:14px;flex-wrap:wrap"></div>
+    </div>
+    <div class="screen-content" style="padding:16px 16px 24px">
+      <div id="detail-alert"></div>
+      <div id="detail-actions" style="display:none;margin-bottom:14px">
+        <div style="display:flex;gap:10px">
+          <button id="btn-bm" onclick="toggleBookmark()" style="flex:1;padding:12px;border-radius:12px;border:2px solid var(--border);background:#fff;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer">
+            <svg viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" style="width:20px;height:20px"><path d="m19 21-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+            <span style="font-size:11px;font-weight:700;color:var(--muted)">Simpan</span>
+          </button>
+          <button id="btn-rem" onclick="toggleReminder()" style="flex:1;padding:12px;border-radius:12px;border:2px solid var(--border);background:#fff;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer">
+            <svg viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" style="width:20px;height:20px"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            <span style="font-size:11px;font-weight:700;color:var(--muted)">Pengingat</span>
+          </button>
+          <button onclick="shareKajian()" style="flex:1;padding:12px;border-radius:12px;border:2px solid var(--border);background:#fff;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer">
+            <svg viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" style="width:20px;height:20px"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+            <span style="font-size:11px;font-weight:700;color:var(--muted)">Bagikan</span>
+          </button>
+        </div>
+      </div>
+      <div id="detail-edit-wrap" style="display:none;margin-bottom:14px">
+        <div style="display:flex;gap:10px">
+          <button onclick="editKajianAsContrib()" style="flex:1;padding:13px;border-radius:12px;border:2px solid var(--p);background:#fff;display:flex;align-items:center;justify-content:center;gap:8px;font-weight:700;font-size:14px;color:var(--p);cursor:pointer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Edit</button>
+          <button id="detail-del-btn" onclick="contribDeleteKajian()" style="flex:1;padding:13px;border-radius:12px;border:2px solid var(--danger);background:#fff;display:flex;align-items:center;justify-content:center;gap:8px;font-weight:700;font-size:14px;color:var(--danger);cursor:pointer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>Hapus</button>
+        </div>
+      </div>
+      <div class="card" style="padding:18px;margin-bottom:14px">
+        <p style="font-weight:700;font-size:15px;margin-bottom:14px">Detail Kajian</p>
+        <div id="detail-info"></div>
+      </div>
+      <div id="detail-attend-wrap"></div>
+    </div>
+  </div>
+
+  <!-- ════ SCREEN: PRAYER ════ -->
+  <div id="scr-prayer" class="screen">
+    <div id="prayer-hero" style="background:var(--p);padding:20px 20px 24px">
+      <p style="font-size:13px;color:rgba(255,255,255,.75)">Waktu Sholat</p>
+      <p id="prayer-loc" style="font-size:20px;font-weight:800;color:#fff;margin-top:4px">Memuat lokasi...</p>
+      <p id="prayer-date" style="font-size:13px;color:rgba(255,255,255,.75);margin-top:3px"></p>
+    </div>
+    <div class="screen-content" style="padding:14px 16px">
+      <div id="prayer-content"></div>
+    </div>
+    <div id="bnav3"></div>
+  </div>
+
+  <!-- ════ SCREEN: QIBLA ════ -->
+  <div id="scr-qibla" class="screen">
+    <div style="background:var(--p);padding:20px 20px 24px;text-align:center">
+      <p style="font-size:13px;color:rgba(255,255,255,.75)">Arah Kiblat</p>
+      <p id="qibla-loc" style="font-size:20px;font-weight:800;color:#fff;margin-top:4px">Memuat lokasi...</p>
+    </div>
+    <div class="screen-content" style="padding:24px 20px">
+      <div id="qibla-content"></div>
+    </div>
+  </div>
+
+  <!-- ════ SCREEN: SAVED ════ -->
+  <div id="scr-saved" class="screen">
+    <div class="hdr">
+      <button class="hdr-back" onclick="goBack()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:20px;height:20px"><polyline points="15 18 9 12 15 6"/></svg></button>
+      <div class="hdr-title">Tersimpan</div>
+    </div>
+    <div class="screen-content" style="padding:16px"><div id="saved-list"></div></div>
+  </div>
+
+  <!-- ════ SCREEN: REMINDERS ════ -->
+  <div id="scr-reminders" class="screen">
+    <div class="hdr">
+      <button class="hdr-back" onclick="goBack()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:20px;height:20px"><polyline points="15 18 9 12 15 6"/></svg></button>
+      <div class="hdr-title">Pengingat</div>
+    </div>
+    <div class="screen-content" style="padding:16px"><div id="reminders-list"></div></div>
+  </div>
+
+  <!-- ════ SCREEN: ATTENDANCE ════ -->
+
+  <!-- ════ SCREEN: SUBSCRIPTIONS ════ -->
+  <div id="scr-subs" class="screen">
+    <div class="hdr">
+      <button class="hdr-back" onclick="goBack()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:20px;height:20px"><polyline points="15 18 9 12 15 6"/></svg></button>
+      <div class="hdr-title">Langganan Notifikasi</div>
+    </div>
+    <div class="screen-content" style="padding:16px"><div id="subs-content"></div></div>
+  </div>
+
+  <!-- ════ SCREEN: ATTENDANCE (original) ════ -->
+  <div id="scr-attendance" class="screen">
+    <div class="hdr">
+      <button class="hdr-back" onclick="goBack()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:20px;height:20px"><polyline points="15 18 9 12 15 6"/></svg></button>
+      <div class="hdr-title">Riwayat Hadir</div>
+    </div>
+    <div class="screen-content" style="padding:16px"><div id="attendance-list"></div></div>
+  </div>
+
+  <!-- ════ SCREEN: NOTIFICATIONS ════ -->
+  <div id="scr-notif" class="screen">
+    <div class="hdr">
+      <button class="hdr-back" onclick="goBack()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:20px;height:20px"><polyline points="15 18 9 12 15 6"/></svg></button>
+      <div class="hdr-title">Notifikasi</div>
+      <button onclick="markAllRead()" style="font-size:13px;font-weight:700;color:var(--p)">Baca Semua</button>
+    </div>
+    <div class="screen-content" style="padding:16px"><div id="notif-list"></div></div>
+  </div>
+
+  <!-- ════ SCREEN: SUBMIT ════ -->
+  <div id="scr-submit" class="screen">
+    <div class="hdr">
+      <button class="hdr-back" onclick="goBack()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:20px;height:20px"><polyline points="15 18 9 12 15 6"/></svg></button>
+      <div class="hdr-title" id="submit-hdr-title">Submit Kajian</div>
+    </div>
+    <div class="screen-content" style="padding:16px 16px 32px">
+      <div class="field"><label class="lbl">Judul Kajian *</label><input id="sub-title" class="inp" placeholder="Judul kajian"/></div>
+      <div class="field"><label class="lbl">Topik *</label>
+        <select id="sub-topic" class="inp">
+          <option value="">Pilih topik</option>
+          <option>Tafsir</option><option>Fiqih</option><option>Akidah</option><option>Hadits</option>
+          <option>Sirah</option><option>Akhlak</option><option>Muslimah</option><option>Keluarga</option>
+          <option>Tilawah</option><option>Lainnya</option>
+        </select>
+      </div>
+      <!-- Speaker autocomplete -->
+      <div class="field ac-wrap">
+        <label class="lbl">Pembicara *</label>
+        <div style="position:relative">
+          <input id="sub-spk-q" class="inp" placeholder="Ketik min. 3 huruf..." autocomplete="off" oninput="onSpeakerInput()" onfocus="onSpeakerInput()"/>
+          <div id="sub-spk-check" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);display:none;color:var(--p)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:16px;height:16px"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+        </div>
+        <div id="spk-ac" class="ac-list"></div>
+      </div>
+      <!-- Mosque autocomplete -->
+      <div class="field ac-wrap">
+        <label class="lbl">Masjid *</label>
+        <div style="position:relative">
+          <input id="sub-mq-q" class="inp" placeholder="Ketik min. 3 huruf..." autocomplete="off" oninput="onMosqueInput()" onfocus="onMosqueInput()"/>
+          <div id="sub-mq-check" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);display:none;color:var(--p)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:16px;height:16px"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+        </div>
+        <div id="mq-ac" class="ac-list"></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px" class="field">
+        <div><label class="lbl">Tanggal *</label><input id="sub-date" class="inp" type="date"/></div>
+        <div><label class="lbl">Waktu *</label><input id="sub-time" class="inp" type="time"/></div>
+      </div>
+      <div class="field"><label class="lbl">Deskripsi</label><textarea id="sub-desc" class="inp" rows="3" placeholder="Deskripsi singkat kajian" style="resize:none"></textarea></div>
+      <div id="sub-info" style="background:var(--pl);border-radius:12px;padding:12px;margin-bottom:14px;font-size:13px;color:var(--muted)">Kajian akan ditinjau oleh admin sebelum dipublikasikan.</div>
+      <button class="btn btn-p" onclick="doSubmit()"><span id="sub-btn-text">Kirim untuk Review</span></button>
+    </div>
+  </div>
+
+  <!-- ════ SCREEN: ADMIN ════ -->
+  <div id="scr-admin" class="screen">
+    <div class="hdr">
+      <button class="hdr-back" onclick="goBack()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:20px;height:20px"><polyline points="15 18 9 12 15 6"/></svg></button>
+      <div class="hdr-title">Admin Dashboard</div>
+    </div>
+    <div id="admin-hero" style="background:var(--p);padding:12px 16px 18px">
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px" id="admin-stats"></div>
+    </div>
+    <div style="background:#fff;border-bottom:1px solid var(--border);padding:10px 16px">
+      <div class="tabs" id="admin-tabs">
+        <button class="tab active" onclick="setAdminTab('kajian',this)">Kajian</button>
+        <button class="tab" onclick="setAdminTab('speakers',this)">Pembicara</button>
+        <button class="tab" onclick="setAdminTab('mosques',this)">Masjid</button>
+        <button class="tab" onclick="setAdminTab('users',this)">Pengguna</button>
+      </div>
+    </div>
+    <div class="screen-content" style="padding:16px"><div id="admin-content"></div></div>
+  </div>
+
+  <!-- ════ SCREEN: DONATION ════ -->
+  <div id="scr-donation" class="screen">
+    <div class="hdr">
+      <button class="hdr-back" onclick="goBack()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:20px;height:20px"><polyline points="15 18 9 12 15 6"/></svg></button>
+      <div class="hdr-title">Donasi</div>
+    </div>
+    <div class="screen-content" style="padding:20px">
+      <div class="card" style="padding:24px;text-align:center;margin-bottom:16px">
+        <div style="width:56px;height:56px;background:var(--pl);border-radius:16px;display:flex;align-items:center;justify-content:center;margin:0 auto 12px">
+          <svg viewBox="0 0 24 24" fill="none" stroke="var(--p)" stroke-width="2" style="width:28px;height:28px"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        </div>
+        <h2 style="font-size:20px;font-weight:800;color:var(--p);margin-bottom:8px">Dukung Info Kajian</h2>
+        <p style="font-size:14px;color:var(--muted);margin-bottom:4px">Penerima: <strong>Yayasan Info Kajian Indonesia</strong></p>
+        <p style="font-size:13px;color:var(--muted);line-height:1.7">Donasi Anda membantu menjaga platform ini gratis, memperluas jangkauan kajian ke seluruh Indonesia, dan mendukung pengembangan fitur baru.</p>
+      </div>
+      <div class="card" style="padding:24px;text-align:center;margin-bottom:16px">
+        <p style="font-weight:700;font-size:15px;color:var(--p);margin-bottom:16px">Scan QRIS untuk Donasi</p>
+        <!-- QRIS SVG -->
+        <svg class="qr-svg" id="qr-svg" viewBox="0 0 230 230" width="200" height="200" style="border:2px solid var(--border);border-radius:16px;padding:12px;margin-bottom:16px">
+          <!-- Finder pattern TL -->
+          <rect x="10" y="10" width="70" height="70" rx="8" fill="#1B5E38"/>
+          <rect x="20" y="20" width="50" height="50" rx="4" fill="#fff"/>
+          <rect x="30" y="30" width="30" height="30" rx="3" fill="#1B5E38"/>
+          <!-- Finder pattern TR -->
+          <rect x="150" y="10" width="70" height="70" rx="8" fill="#1B5E38"/>
+          <rect x="160" y="20" width="50" height="50" rx="4" fill="#fff"/>
+          <rect x="170" y="30" width="30" height="30" rx="3" fill="#1B5E38"/>
+          <!-- Finder pattern BL -->
+          <rect x="10" y="150" width="70" height="70" rx="8" fill="#1B5E38"/>
+          <rect x="20" y="160" width="50" height="50" rx="4" fill="#fff"/>
+          <rect x="30" y="170" width="30" height="30" rx="3" fill="#1B5E38"/>
+          <!-- Timing pattern -->
+          <rect x="90" y="10" width="8" height="8" fill="#1B5E38"/>
+          <rect x="106" y="10" width="8" height="8" fill="#1B5E38"/>
+          <rect x="122" y="10" width="8" height="8" fill="#1B5E38"/>
+          <rect x="138" y="10" width="8" height="8" fill="#1B5E38"/>
+          <rect x="10" y="90" width="8" height="8" fill="#1B5E38"/>
+          <rect x="10" y="106" width="8" height="8" fill="#1B5E38"/>
+          <rect x="10" y="122" width="8" height="8" fill="#1B5E38"/>
+          <rect x="10" y="138" width="8" height="8" fill="#1B5E38"/>
+          <!-- Data modules -->
+          <rect x="90" y="90" width="50" height="50" rx="6" fill="#1B5E38"/>
+          <rect x="98" y="98" width="34" height="34" rx="4" fill="#fff"/>
+          <rect x="106" y="106" width="18" height="18" rx="3" fill="#1B5E38"/>
+          <!-- Scattered data -->
+          <rect x="92" y="150" width="8" height="8" rx="1" fill="#1B5E38"/>
+          <rect x="108" y="150" width="8" height="8" rx="1" fill="#1B5E38"/>
+          <rect x="124" y="150" width="8" height="8" rx="1" fill="#1B5E38"/>
+          <rect x="150" y="90" width="8" height="8" rx="1" fill="#1B5E38"/>
+          <rect x="166" y="90" width="8" height="8" rx="1" fill="#1B5E38"/>
+          <rect x="182" y="90" width="8" height="8" rx="1" fill="#1B5E38"/>
+          <rect x="198" y="90" width="8" height="8" rx="1" fill="#1B5E38"/>
+          <rect x="150" y="106" width="8" height="8" rx="1" fill="#1B5E38"/>
+          <rect x="182" y="106" width="8" height="8" rx="1" fill="#1B5E38"/>
+          <rect x="150" y="122" width="8" height="8" rx="1" fill="#1B5E38"/>
+          <rect x="166" y="122" width="8" height="8" rx="1" fill="#1B5E38"/>
+          <rect x="198" y="122" width="8" height="8" rx="1" fill="#1B5E38"/>
+          <rect x="150" y="138" width="8" height="8" rx="1" fill="#1B5E38"/>
+          <rect x="198" y="138" width="8" height="8" rx="1" fill="#1B5E38"/>
+          <rect x="150" y="166" width="8" height="8" rx="1" fill="#1B5E38"/>
+          <rect x="166" y="150" width="8" height="8" rx="1" fill="#1B5E38"/>
+          <rect x="182" y="166" width="8" height="8" rx="1" fill="#1B5E38"/>
+          <rect x="198" y="166" width="8" height="8" rx="1" fill="#1B5E38"/>
+          <rect x="166" y="182" width="8" height="8" rx="1" fill="#1B5E38"/>
+          <rect x="198" y="182" width="8" height="8" rx="1" fill="#1B5E38"/>
+          <rect x="140" y="162" width="8" height="8" rx="1" fill="#1B5E38"/>
+          <rect x="92" y="168" width="8" height="8" rx="1" fill="#1B5E38"/>
+          <rect x="92" y="184" width="8" height="8" rx="1" fill="#1B5E38"/>
+          <rect x="108" y="168" width="8" height="8" rx="1" fill="#1B5E38"/>
+          <rect x="124" y="184" width="8" height="8" rx="1" fill="#1B5E38"/>
+          <rect x="140" y="150" width="8" height="8" rx="1" fill="#1B5E38"/>
+        </svg>
+        <p style="font-size:13px;color:var(--muted);margin-bottom:20px">Scan dengan aplikasi perbankan atau e-wallet apapun</p>
+        <button class="btn btn-p" onclick="downloadQR()" style="display:flex;align-items:center;justify-content:center;gap:8px">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Unduh QR Code
+        </button>
+      </div>
+      <div style="background:var(--pl);border-radius:14px;padding:16px">
+        <p style="font-size:13px;font-weight:700;color:var(--p);margin-bottom:8px">Catatan:</p>
+        <p style="font-size:13px;color:var(--muted);line-height:1.8">• Donasi bersifat sukarela, tidak ada nominal minimum<br>• Tidak ada pelacakan transaksi dari platform ini<br>• Donasi digunakan untuk biaya operasional platform</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════ SCREEN: PROFILE ════ -->
+  <div id="scr-profile" class="screen">
+    <div class="screen-content">
+      <div id="profile-hero"></div>
+      <div style="padding:16px">
+        <div id="profile-contrib-cta"></div>
+        <div id="profile-admin-btn"></div>
+        <div id="profile-menu"></div>
+      </div>
+    </div>
+    <div id="bnav4"></div>
+  </div>
+
+  <div id="gnav">
+    <nav style="display:flex;width:100%;background:#fff;border-top:1px solid var(--border);padding-bottom:env(safe-area-inset-bottom,0px)">
+      <div class="nav-item active" data-nav="home" onclick="goScreen('home')"><div style="position:relative"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div><span>Beranda</span></div>
+      <div class="nav-item" data-nav="kajian" onclick="goScreen('kajian')"><div style="position:relative"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></div><span>Kajian</span></div>
+      <div class="nav-item" data-nav="prayer" onclick="goScreen('prayer')"><div style="position:relative"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div><span>Sholat</span></div>
+      <div class="nav-item" data-nav="notif" onclick="goScreen('notif')"><div style="position:relative"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div><span>Notif</span></div>
+      <div class="nav-item" data-nav="profile" onclick="goScreen('profile')"><div style="position:relative"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div><span>Profil</span></div>
+    </nav>
+  </div>
+</div><!-- end #app -->
+
+<!-- ════ MODALS ════ -->
+
+<!-- Date Picker Modal -->
+<div id="modal-date" class="overlay" onclick="closeModal('modal-date')">
+  <div class="sheet" onclick="event.stopPropagation()">
+    <div class="sheet-handle"></div>
+    <p style="font-weight:700;font-size:17px;margin-bottom:16px">Pilih Tanggal</p>
+    <input id="modal-date-inp" type="date" class="inp" style="margin-bottom:16px"/>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-o" onclick="clearModalDate()">Hapus</button>
+      <button class="btn btn-p" onclick="confirmModalDate()">Pilih</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Speaker Modal -->
+<div id="modal-spk" class="overlay" onclick="closeModal('modal-spk')">
+  <div class="sheet" onclick="event.stopPropagation()">
+    <div class="sheet-handle"></div>
+    <p style="font-weight:700;font-size:17px;margin-bottom:16px">Tambah Pembicara Baru</p>
+    <div class="field"><label class="lbl">Nama Lengkap</label><input id="new-spk-name" class="inp" placeholder="Contoh: Ustadz Ahmad Zaini"/></div>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-o" onclick="closeModal('modal-spk')">Batal</button>
+      <button class="btn btn-p" onclick="confirmAddSpeaker()">Tambah</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Mosque Modal -->
+<div id="modal-mq" class="overlay" onclick="closeModal('modal-mq')">
+  <div class="sheet" onclick="event.stopPropagation()">
+    <div class="sheet-handle"></div>
+    <p style="font-weight:700;font-size:17px;margin-bottom:16px">Tambah Masjid Baru</p>
+    <div class="field"><label class="lbl">Nama Masjid</label><input id="new-mq-name" class="inp" placeholder="Masjid Al-Ikhlas"/></div>
+    <div class="field"><label class="lbl">Kota</label><input id="new-mq-city" class="inp" placeholder="Jakarta Selatan"/></div>
+    <div class="field"><label class="lbl">Kecamatan</label><input id="new-mq-district" class="inp" placeholder="Pasar Minggu"/></div>
+    <div class="field"><label class="lbl">Alamat Lengkap</label><input id="new-mq-addr" class="inp" placeholder="Jl. Raya No. 10"/></div>
+    <div style="background:var(--pl);border-radius:10px;padding:10px;margin-bottom:14px;font-size:12px;color:var(--muted)">Koordinat akan ditentukan otomatis. Admin akan memverifikasi lokasi.</div>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-o" onclick="closeModal('modal-mq')">Batal</button>
+      <button class="btn btn-p" onclick="confirmAddMosque()">Tambah</button>
+    </div>
+  </div>
+</div>
+
+<!-- Attendance Error Modal -->
+<div id="modal-att" class="overlay" onclick="closeModal('modal-att')">
+  <div class="sheet" onclick="event.stopPropagation()">
+    <div class="sheet-handle"></div>
+    <div style="text-align:center;padding:0 8px">
+      <div style="width:56px;height:56px;background:#FFEBEE;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 12px">
+        <svg viewBox="0 0 24 24" fill="none" stroke="var(--danger)" stroke-width="2" style="width:28px;height:28px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      </div>
+      <p style="font-weight:700;font-size:16px;margin-bottom:10px">Terlalu Jauh</p>
+      <p id="att-err-msg" style="font-size:14px;color:var(--muted);line-height:1.65">Anda harus berada dalam radius <strong>200 meter</strong> dari lokasi kajian untuk konfirmasi kehadiran.</p>
+      <button class="btn btn-p" onclick="closeModal('modal-att')" style="margin-top:20px">Tutup</button>
+    </div>
+  </div>
+</div>
+
+<!-- Contributor Modal -->
+<div id="modal-contrib" class="overlay" onclick="closeModal('modal-contrib')">
+  <div class="sheet" onclick="event.stopPropagation()">
+    <div class="sheet-handle"></div>
+    <p style="font-weight:700;font-size:17px;margin-bottom:10px">Jadi Kontributor</p>
+    <p style="font-size:14px;color:var(--muted);line-height:1.65;margin-bottom:20px">Sebagai Kontributor, Anda dapat submit jadwal kajian dari ustadz dan masjid di sekitar Anda. Isi formulir pendaftaran untuk diverifikasi oleh admin.</p>
+    <button class="btn btn-p" onclick="window.open('https://forms.google.com','_blank');closeModal('modal-contrib');showToast('Formulir dibuka! Isi data Anda.','info')">Buka Formulir Pendaftaran</button>
+  </div>
+</div>
+
+<script>
+// Global error handler for debugging on mobile
+window.onerror = function(msg, url, line, col, error) {
+  var errDiv = document.getElementById('js-error-debug');
+  if (!errDiv) {
+    errDiv = document.createElement('div');
+    errDiv.id = 'js-error-debug';
+    errDiv.style.cssText = 'position:fixed;bottom:60px;left:10px;right:10px;background:#C62828;color:#fff;padding:12px;border-radius:12px;z-index:9999;font-size:12px;font-family:monospace;max-height:120px;overflow:auto;word-break:break-all';
+    document.body.appendChild(errDiv);
+  }
+  errDiv.innerHTML += 'Error: ' + msg + ' (line ' + line + ')<br>';
+  return false;
+};
+
+// ══════════════════════════════════════════
+// FIREBASE CONFIG
+// ══════════════════════════════════════════
+// ⚠️ ISI DENGAN CONFIG DARI FIREBASE CONSOLE
+var firebaseConfig = {
+  apiKey: "AIzaSyD4mdITD16NaPHaaK7zs6ToxvAlyCZA5V4",
+  authDomain: "infokajian-6e053.firebaseapp.com",
+  projectId: "infokajian-6e053",
+  storageBucket: "infokajian-6e053.firebasestorage.app",
+  messagingSenderId: "175043780829",
+  appId: "1:175043780829:web:fbde809754d37ba1e6fb34"
+};
+
+var fbReady = false;
+try {
+  if (typeof firebase !== 'undefined') {
+    firebase.initializeApp(firebaseConfig);
+    fbReady = firebaseConfig.apiKey !== 'YOUR_API_KEY';
+  }
+} catch(e) { console.warn('Firebase init error:', e); }
+var auth = fbReady ? firebase.auth() : null;
+var db = fbReady ? firebase.firestore() : null;
+
+// ══════════════════════════════════════════
+// FIRESTORE HELPERS
+// ══════════════════════════════════════════
+async function fsSet(collection, id, data) {
+  if (!db) return;
+  try { await db.collection(collection).doc(id).set(data, {merge:true}); } catch(e) { console.warn('Firestore write error:', e); }
+}
+async function fsDel(collection, id) {
+  if (!db) return;
+  try { await db.collection(collection).doc(id).delete(); } catch(e) { console.warn('Firestore delete error:', e); }
+}
+async function fsLoadCollection(collection) {
+  if (!db) return [];
+  try { var snap = await db.collection(collection).get(); return snap.docs.map(function(d){ var obj=d.data(); obj.id=d.id; return obj; }); } catch(e) { console.warn('Firestore read error:', e); return []; }
+}
+async function fsSaveUserData() {
+  if (!db || !state.user) return;
+  try {
+    await db.collection('userData').doc(state.user.id).set({
+      bookmarks: state.bookmarks,
+      reminders: state.reminders,
+      attendances: state.attendances,
+      notifications: state.notifications.slice(0, 50),
+      subscriptions: state.subscriptions,
+    }, {merge:true});
+  } catch(e) { console.warn('Save user data error:', e); }
+}
+async function fsLoadUserData(uid) {
+  if (!db) return;
+  try {
+    const doc = await db.collection('userData').doc(uid).get();
+    if (doc.exists) {
+      const d = doc.data();
+      if (d.bookmarks) state.bookmarks = d.bookmarks;
+      if (d.reminders) state.reminders = d.reminders;
+      if (d.attendances) state.attendances = d.attendances;
+      if (d.notifications) state.notifications = d.notifications;
+      if (d.subscriptions) state.subscriptions = d.subscriptions;
+    }
+  } catch(e) { console.warn('Load user data error:', e); }
+}
+async function fsLoadAll() {
+  if (!db) return;
+  try {
+    const [speakers, mosques, kajian, users] = await Promise.all([
+      fsLoadCollection('speakers'),
+      fsLoadCollection('mosques'),
+      fsLoadCollection('kajian'),
+      fsLoadCollection('users'),
+    ]);
+    if (speakers.length) DB.speakers = speakers;
+    if (mosques.length) DB.mosques = mosques;
+    if (kajian.length) DB.kajian = kajian;
+    if (users.length) DB.users = users;
+  } catch(e) { console.warn('Load all error:', e); }
+}
+async function fsSeedInitialData() {
+  if (!db) return;
+  const check = await db.collection('speakers').limit(1).get();
+  if (!check.empty) return; // already seeded
+  const batch1 = db.batch();
+  DB.speakers.forEach(s => batch1.set(db.collection('speakers').doc(s.id), s));
+  DB.mosques.forEach(m => batch1.set(db.collection('mosques').doc(m.id), m));
+  await batch1.commit();
+  const batch2 = db.batch();
+  DB.kajian.forEach(k => batch2.set(db.collection('kajian').doc(k.id), k));
+  await batch2.commit();
+}
+
+// ══════════════════════════════════════════
+// DATA (fallback jika Firebase belum disetup)
+// ══════════════════════════════════════════
+const today = () => new Date().toISOString().split('T')[0];
+const addDays = (s, n) => { const d = new Date(s + 'T12:00:00'); d.setDate(d.getDate() + n); return d.toISOString().split('T')[0]; };
+const T = today();
+
+const DB = {
+  speakers: [
+    {id:'s1',full_name:'Ustadz Abdul Somad',normalized_name:'abdul somad',verified:true,created_by:'u3'},
+    {id:'s2',full_name:'Ustadz Adi Hidayat',normalized_name:'adi hidayat',verified:true,created_by:'u3'},
+    {id:'s3',full_name:'Ustadz Felix Siauw',normalized_name:'felix siauw',verified:true,created_by:'u3'},
+    {id:'s4',full_name:'Ustadz Khalid Basalamah',normalized_name:'khalid basalamah',verified:true,created_by:'u3'},
+    {id:'s5',full_name:'Ustadz Hanan Attaki',normalized_name:'hanan attaki',verified:true,created_by:'u3'},
+  ],
+  mosques: [
+    {id:'m1',name:'Masjid Istiqlal',address:'Jl. Taman Wijaya Kusuma, Gambir, Jakarta Pusat',city:'Jakarta Pusat',district:'Gambir',lat:-6.1701,lng:106.831,verified:true},
+    {id:'m2',name:'Masjid Al-Azhar',address:'Jl. Sisingamangaraja, Kebayoran Baru, Jakarta Selatan',city:'Jakarta Selatan',district:'Kebayoran Baru',lat:-6.2411,lng:106.8082,verified:true},
+    {id:'m3',name:'Masjid Agung Sunda Kelapa',address:'Jl. Taman Sunda Kelapa, Menteng, Jakarta Pusat',city:'Jakarta Pusat',district:'Menteng',lat:-6.1965,lng:106.8396,verified:true},
+    {id:'m4',name:'Masjid Raya Bandung',address:'Jl. Dalem Kaum, Alun-Alun, Bandung',city:'Bandung',district:'Alun-Alun',lat:-6.921,lng:107.6053,verified:true},
+    {id:'m5',name:'Masjid Gedhe Kauman',address:'Jl. Kauman, Kraton, Yogyakarta',city:'Yogyakarta',district:'Kraton',lat:-7.8014,lng:110.3645,verified:true},
+  ],
+  kajian: [
+    {id:'k1',title:'Tafsir Juz Amma untuk Pemula',topic:'Tafsir',speaker_id:'s2',mosque_id:'m1',date:T,time:'08:00',status:'approved',description:'Kajian rutin membahas tafsir juz amma dengan bahasa yang mudah dipahami semua kalangan.',submitted_by:'u2'},
+    {id:'k2',title:'Fiqih Muamalah Modern',topic:'Fiqih',speaker_id:'s1',mosque_id:'m2',date:addDays(T,1),time:'19:30',status:'approved',description:'Membahas hukum-hukum transaksi keuangan modern dalam perspektif Islam.',submitted_by:'u2'},
+    {id:'k3',title:'Sirah Nabawiyah: Hikmah Hijrah',topic:'Sirah',speaker_id:'s5',mosque_id:'m3',date:addDays(T,1),time:'20:00',status:'approved',description:'Mengupas perjalanan hijrah Rasulullah SAW dan hikmah yang bisa kita ambil.',submitted_by:'u2'},
+    {id:'k4',title:'Akidah Islam: Mengenal Allah SWT',topic:'Akidah',speaker_id:'s4',mosque_id:'m4',date:addDays(T,7),time:'09:00',status:'approved',description:'Penjelasan mendalam mengenai tauhid dan mengenal Allah melalui asmaul husna.',submitted_by:'u2'},
+    {id:'k5',title:'Tazkiyatun Nafs: Menyucikan Jiwa',topic:'Akhlak',speaker_id:'s3',mosque_id:'m5',date:addDays(T,7),time:'17:30',status:'postponed',description:'Kajian tentang penyucian jiwa dan akhlak mulia dalam kehidupan sehari-hari.',submitted_by:'u2'},
+    {id:'k6',title:'Hadits Arbain: Niat & Amal',topic:'Hadits',speaker_id:'s2',mosque_id:'m1',date:T,time:'13:00',status:'approved',description:'Membahas hadits pilihan dari Arbain Nawawi tentang niat dan amalan shalih.',submitted_by:'u2'},
+    {id:'k7',title:'Kajian Muslimah: Wanita Shalihah',topic:'Muslimah',speaker_id:'s1',mosque_id:'m2',date:addDays(T,14),time:'10:00',status:'pending',description:'Kajian khusus muslimah membahas peran dan keutamaan wanita shalihah.',submitted_by:'u2'},
+    {id:'k8',title:'Pengantar Ilmu Tajwid',topic:'Tilawah',speaker_id:'s4',mosque_id:'m3',date:addDays(T,3),time:'08:30',status:'approved',description:'Belajar dasar-dasar tajwid untuk membaca Al-Quran dengan benar.',submitted_by:'u2'},
+    {id:'k9',title:'Kajian Keluarga: Parenting Islami',topic:'Keluarga',speaker_id:'s5',mosque_id:'m4',date:addDays(T,5),time:'10:00',status:'cancelled',description:'Membahas pola asuh anak sesuai nilai-nilai Islam.',submitted_by:'u2'},
+  ],
+  users: [
+    {id:'u1',email:'user@demo.com',password:'demo123',name:'Ahmad Fauzi',role:'user',created_at:'2024-01-15'},
+    {id:'u2',email:'contributor@demo.com',password:'demo123',name:'Siti Aisyah',role:'contributor',created_at:'2024-01-10'},
+    {id:'u3',email:'syahlanxzaelani@gmail.com',password:'adminINFOKAJIAN14',name:'Admin Kajian',role:'admin',created_at:'2024-01-01'},
+  ]
+};
+
+// ══════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════
+let state = {
+  user: null,
+  location: null,
+  locationError: null,
+  bookmarks: [],
+  reminders: [],
+  attendances: [],
+  notifications: [
+    {message:"Selamat datang di Info Kajian! Temukan kajian di dekat Anda.",read:false,timestamp:new Date().toISOString()}
+  ],
+  searchDate: '',
+  searchQ: '',
+  searchTopic: '',
+  kajianDate: '',
+  kajianTopic: '',
+  currentKajianId: null,
+  prevScreen: 'home',
+  datePurpose: 'home', // 'home' or 'kajian'
+  selectedSpeakerId: null,
+  selectedMosqueId: null,
+  searchLoc: '',
+  editKajianId: null,
+  adminTab: 'kajian',
+  qiblaHeading: null,
+  qiblaOrientHandler: null,
+  notifPermission: (typeof Notification !== 'undefined' && Notification.permission) || 'default',
+  subscriptions: { speakers: [], mosques: [], contributors: [] },
+};
+
+// ══════════════════════════════════════════
+// UTILS
+// ══════════════════════════════════════════
+const haversine = (la1,ln1,la2,ln2) => {
+  const R=6371000, dL=(la2-la1)*Math.PI/180, dl=(ln2-ln1)*Math.PI/180;
+  var sd=Math.sin(dL/2),sd2=Math.sin(dl/2); const a=sd*sd+Math.cos(la1*Math.PI/180)*Math.cos(la2*Math.PI/180)*sd2*sd2;
+  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+};
+var qiblaBearing = function(lat,lng) {
+  var p1=lat*Math.PI/180, p2=21.4225*Math.PI/180, dl=(39.8262-lng)*Math.PI/180;
+  return (Math.atan2(Math.sin(dl)*Math.cos(p2),Math.cos(p1)*Math.sin(p2)-Math.sin(p1)*Math.cos(p2)*Math.cos(dl))*180/Math.PI+360)%360;
+};
+const fmtDateLong = s => new Date(s+'T12:00:00').toLocaleDateString('id-ID',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+const fmtDateShort = s => new Date(s+'T12:00:00').toLocaleDateString('id-ID',{day:'numeric',month:'short'});
+const fmtDist = m => m<1000?`${Math.round(m)} m`:`${(m/1000).toFixed(1)} km`;
+const normName = n => n.toLowerCase().replace(/\b(ust\.?|ustadz?|dr\.?|kh\.?|lc\.?|h\.?|hj\.?)\b/gi,'').replace(/\s+/g,' ').trim();
+const getSpeaker = id => DB.speakers.find(s=>s.id===id);
+const getMosque = id => DB.mosques.find(m=>m.id===id);
+const STATUS = {
+  approved:{label:'Terjadwal',cls:'tag-g'},
+  postponed:{label:'Ditunda',cls:'tag-o'},
+  cancelled:{label:'Dibatalkan',cls:'tag-r'},
+  pending:{label:'Pending Review',cls:'tag-x'}
+};
+const iconSVG = (name,color='currentColor',size=16) => {
+  const icons = {
+    calendar:`<svg viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2" style="width:${size}px;height:${size}px;flex-shrink:0"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`,
+    clock:`<svg viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2" style="width:${size}px;height:${size}px;flex-shrink:0"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`,
+    book:`<svg viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2" style="width:${size}px;height:${size}px;flex-shrink:0"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>`,
+    pin:`<svg viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2" style="width:${size}px;height:${size}px;flex-shrink:0"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>`,
+    bookmark:`<svg viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2" style="width:${size}px;height:${size}px"><path d="m19 21-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>`,
+    check:`<svg viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2.5" style="width:${size}px;height:${size}px"><polyline points="20 6 9 17 4 12"/></svg>`,
+    alert:`<svg viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2" style="width:${size}px;height:${size}px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`,
+    chevron:`<svg viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2.5" style="width:${size}px;height:${size}px"><polyline points="9 18 15 12 9 6"/></svg>`,
+  };
+  return icons[name]||'';
+};
+
+// ══════════════════════════════════════════
+// TOAST
+// ══════════════════════════════════════════
+let toastTimer;
+function showToast(msg, type='s') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = `show t-${type[0]}`;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>{ el.className=''; }, 3200);
+}
+
+// ══════════════════════════════════════════
+// MODALS
+// ══════════════════════════════════════════
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+// ══════════════════════════════════════════
+// SCREEN NAVIGATION
+// ══════════════════════════════════════════
+const MAIN_SCREENS = ['home','kajian','prayer','profile'];
+let screenHistory = ['home'];
+
+function goScreen(name) {
+  const screens = document.querySelectorAll('.screen');
+  screens.forEach(s => s.classList.remove('active'));
+  const target = document.getElementById('scr-' + name);
+  if (!target) return;
+  target.classList.add('active');
+  target.scrollTop = 0;
+  if (screenHistory[screenHistory.length-1] !== name) screenHistory.push(name);
+  onScreenEnter(name);
+  updateNav(name);
+}
+
+function goBack() {
+  screenHistory.pop();
+  const prev = screenHistory[screenHistory.length-1] || 'home';
+  const screens = document.querySelectorAll('.screen');
+  screens.forEach(s => s.classList.remove('active'));
+  const target = document.getElementById('scr-' + prev);
+  if (target) { target.classList.add('active'); target.scrollTop = 0; }
+  onScreenEnter(prev);
+  updateNav(prev);
+}
+
+function updateNav(name) {
+  const gnav = document.getElementById('gnav');
+  if(gnav) gnav.classList.toggle('hidden', ['login','register'].includes(name));
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.toggle('active', el.dataset.nav === name));
+  const u = state.notifications.filter(n=>!n.read).length;
+  document.querySelectorAll('.nav-badge').forEach(el=>el.style.display=u>0?'block':'none');
+}
+
+function onScreenEnter(name) {
+  if (name==='home') renderHome();
+  if (name==='kajian') renderKajianList();
+  if (name==='prayer') renderPrayer();
+  if (name==='qibla') renderQibla();
+  if (name==='profile') renderProfile();
+  if (name==='saved') renderSaved();
+  if (name==='reminders') renderReminders();
+  if (name==='attendance') renderAttendance();
+  if (name==='notif') renderNotifs();
+  if (name==='admin') renderAdmin();
+  if (name==='submit') initSubmit();
+  if (name==='subs') renderSubscriptions();
+}
+
+function requireLogin(cb) {
+  if (!state.user) { showToast('Login untuk mengakses fitur ini','i'); goScreen('login'); return; }
+  cb();
+}
+function requireContrib(cb) {
+  if (!state.user) { showToast('Login untuk mengakses fitur ini','i'); goScreen('login'); return; }
+  if (state.user.role !== 'contributor' && state.user.role !== 'admin') { showToast('Hanya kontributor yang dapat submit kajian','w'); return; }
+  cb();
+}
+function goNotif() {
+  if (!state.user) { showToast('Login untuk melihat notifikasi','i'); goScreen('login'); return; }
+  goScreen('notif');
+}
+
+// ══════════════════════════════════════════
+// BOTTOM NAV (injected into multiple screens)
+// ══════════════════════════════════════════
+function navHTML() {
+  const unread = state.notifications.filter(n=>!n.read).length;
+  const items = [
+    {id:'home',label:'Beranda',icon:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>`},
+    {id:'kajian',label:'Kajian',icon:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>`},
+    {id:'prayer',label:'Sholat',icon:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`},
+    {id:'notif',label:'Notif',icon:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>`,badge:unread>0},
+    {id:'profile',label:'Profil',icon:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`},
+  ];
+  const cur = screenHistory[screenHistory.length-1]||'home';
+  return `<nav style="display:flex;width:100%;background:#fff;border-top:1px solid var(--border);padding-bottom:env(safe-area-inset-bottom,0px)">
+    ${items.map(it=>`
+      <div class="nav-item ${cur===it.id?'active':''}" data-nav="${it.id}" onclick="goScreen('${it.id}')">
+        <div style="position:relative">${it.icon}${it.badge?`<div class="nav-badge"></div>`:''}</div>
+        <span>${it.label}</span>
+      </div>`).join('')}
+  </nav>`;
+}
+
+function injectNavs() {
+  const gnav = document.getElementById('gnav');
+  if(gnav) gnav.innerHTML = navHTML();
+}
+
+
+// ══════════════════════════════════════════
+// LOKASI AUTOCOMPLETE (FIX #1)
+// ══════════════════════════════════════════
+const INDO_CITIES = [
+  {v:'Jakarta Pusat',s:'DKI Jakarta'},{v:'Jakarta Selatan',s:'DKI Jakarta'},{v:'Jakarta Barat',s:'DKI Jakarta'},{v:'Jakarta Timur',s:'DKI Jakarta'},{v:'Jakarta Utara',s:'DKI Jakarta'},
+  {v:'Bandung',s:'Jawa Barat'},{v:'Bekasi',s:'Jawa Barat'},{v:'Bogor',s:'Jawa Barat'},{v:'Depok',s:'Jawa Barat'},{v:'Cirebon',s:'Jawa Barat'},{v:'Tasikmalaya',s:'Jawa Barat'},{v:'Sukabumi',s:'Jawa Barat'},{v:'Karawang',s:'Jawa Barat'},
+  {v:'Surabaya',s:'Jawa Timur'},{v:'Malang',s:'Jawa Timur'},{v:'Sidoarjo',s:'Jawa Timur'},{v:'Kediri',s:'Jawa Timur'},{v:'Jember',s:'Jawa Timur'},{v:'Mojokerto',s:'Jawa Timur'},{v:'Madiun',s:'Jawa Timur'},
+  {v:'Semarang',s:'Jawa Tengah'},{v:'Solo',s:'Jawa Tengah'},{v:'Pekalongan',s:'Jawa Tengah'},{v:'Purwokerto',s:'Jawa Tengah'},{v:'Tegal',s:'Jawa Tengah'},{v:'Kudus',s:'Jawa Tengah'},
+  {v:'Yogyakarta',s:'DI Yogyakarta'},{v:'Sleman',s:'DI Yogyakarta'},{v:'Bantul',s:'DI Yogyakarta'},
+  {v:'Tangerang',s:'Banten'},{v:'Tangerang Selatan',s:'Banten'},{v:'Serang',s:'Banten'},{v:'Cilegon',s:'Banten'},
+  {v:'Medan',s:'Sumatera Utara'},{v:'Padang',s:'Sumatera Barat'},{v:'Palembang',s:'Sumatera Selatan'},{v:'Pekanbaru',s:'Riau'},{v:'Batam',s:'Kepulauan Riau'},{v:'Jambi',s:'Jambi'},{v:'Bengkulu',s:'Bengkulu'},{v:'Bandar Lampung',s:'Lampung'},{v:'Banda Aceh',s:'Aceh'},
+  {v:'Makassar',s:'Sulawesi Selatan'},{v:'Manado',s:'Sulawesi Utara'},{v:'Kendari',s:'Sulawesi Tenggara'},{v:'Palu',s:'Sulawesi Tengah'},
+  {v:'Banjarmasin',s:'Kalimantan Selatan'},{v:'Pontianak',s:'Kalimantan Barat'},{v:'Balikpapan',s:'Kalimantan Timur'},{v:'Samarinda',s:'Kalimantan Timur'},
+  {v:'Denpasar',s:'Bali'},{v:'Mataram',s:'NTB'},{v:'Kupang',s:'NTT'},
+  {v:'Ambon',s:'Maluku'},{v:'Jayapura',s:'Papua'},{v:'Sorong',s:'Papua Barat'},
+];
+function onLocInput() {
+  const q = (document.getElementById('home-loc-inp').value || '').trim();
+  const ac = document.getElementById('loc-ac');
+  const clr = document.getElementById('home-loc-clear');
+  if(clr) clr.style.display = q ? 'flex' : 'none';
+  if(!q) { if(ac) ac.classList.remove('open'); state.searchLoc=''; return; }
+  const ql = q.toLowerCase();
+  const opts = [];
+  const seen = new Set();
+  DB.mosques.forEach(m => {
+    if(m.city.toLowerCase().includes(ql) && !seen.has(m.city)) { seen.add(m.city); opts.push({v:m.city, s:'Kota (tersedia)'}); }
+    if(m.district.toLowerCase().includes(ql) && !seen.has(m.district)) { seen.add(m.district); opts.push({v:m.district, s:m.city}); }
+  });
+  INDO_CITIES.forEach(c => {
+    if(c.v.toLowerCase().includes(ql) && !seen.has(c.v)) { seen.add(c.v); opts.push({v:c.v, s:c.s}); }
+  });
+  if(!opts.length) { if(ac) ac.classList.remove('open'); return; }
+  ac.innerHTML = opts.slice(0,5).map(o=>`<div class="ac-item" onclick="selLocFilter('${o.v.replace(/'/g,"\'")}')"><div style="font-weight:600">${o.v}</div><div class="ac-item-sub">${o.s}</div></div>`).join('');
+  ac.classList.add('open');
+}
+function selLocFilter(v) {
+  const inp = document.getElementById('home-loc-inp'); if(inp) inp.value = v;
+  const clr = document.getElementById('home-loc-clear'); if(clr) clr.style.display = 'flex';
+  const ac = document.getElementById('loc-ac'); if(ac) ac.classList.remove('open');
+  state.searchLoc = v;
+}
+function clearLocFilter() {
+  const inp = document.getElementById('home-loc-inp'); if(inp) inp.value = '';
+  const clr = document.getElementById('home-loc-clear'); if(clr) clr.style.display = 'none';
+  const ac = document.getElementById('loc-ac'); if(ac) ac.classList.remove('open');
+  state.searchLoc = '';
+}
+
+// ══════════════════════════════════════════
+// LOCATION
+// ══════════════════════════════════════════
+function getLocation() {
+  if (!navigator.geolocation) { state.locationError = 'GPS tidak tersedia di browser ini'; updateLocUI(); return; }
+  state.locationError = null;
+  var locTextEl = document.getElementById('home-loc-text');
+  if (locTextEl) locTextEl.textContent = 'Mendapatkan lokasi...';
+  var locBtnWrap = document.getElementById('home-loc-btn-wrap');
+  if (locBtnWrap) locBtnWrap.style.display = 'none';
+
+  function onGeoSuccess(pos) {
+    var lat = pos.coords.latitude, lng = pos.coords.longitude;
+    try {
+      fetch('https://nominatim.openstreetmap.org/reverse?lat='+lat+'&lon='+lng+'&format=json')
+        .then(function(res){return res.json();})
+        .then(function(d){
+          var addr = d.address || {};
+          var district = addr.suburb||addr.city_district||addr.town||addr.village||'Kecamatan';
+          var city = addr.city||addr.county||addr.state||'Kota';
+          state.location = {lat:lat,lng:lng,city:city,district:district};
+          updateLocUI(); renderHome();
+        })
+        .catch(function(){
+          state.location = {lat:lat,lng:lng,city:'Kota',district:'Kecamatan'};
+          updateLocUI(); renderHome();
+        });
+    } catch(e) {
+      state.location = {lat:lat,lng:lng,city:'Kota',district:'Kecamatan'};
+      updateLocUI(); renderHome();
+    }
+  }
+
+  function onGeoError(err) {
+    // If high accuracy failed, retry with low accuracy (network-based)
+    if (state._geoRetried !== true) {
+      state._geoRetried = true;
+      navigator.geolocation.getCurrentPosition(onGeoSuccess, onGeoFinalError, {enableHighAccuracy:false, timeout:15000, maximumAge:300000});
+    } else {
+      onGeoFinalError(err);
+    }
+  }
+
+  function onGeoFinalError(err) {
+    state._geoRetried = false;
+    var msg = 'Lokasi tidak tersedia';
+    if (err && err.code === 1) msg = 'Izin lokasi ditolak. Aktifkan di Pengaturan browser.';
+    else if (err && err.code === 2) msg = 'Lokasi tidak tersedia. Periksa koneksi internet.';
+    else if (err && err.code === 3) msg = 'Waktu permintaan lokasi habis. Coba lagi.';
+    state.locationError = msg;
+    updateLocUI();
+    renderHome();
+  }
+
+  state._geoRetried = false;
+  navigator.geolocation.getCurrentPosition(onGeoSuccess, onGeoError, {enableHighAccuracy:true, timeout:10000, maximumAge:60000});
+}
+
+function updateLocUI() {
+  var loc = state.location, err = state.locationError;
+  var locText = document.getElementById('home-loc-text');
+  var locBtn = document.getElementById('home-loc-btn-wrap');
+  var locVal = document.getElementById('home-loc-val');
+  if (loc) {
+    if(locText) locText.textContent = loc.district + ', ' + loc.city;
+    if(locBtn) locBtn.style.display = 'none';
+    if(locVal) { locVal.textContent = loc.district; locVal.classList.remove('empty'); }
+  } else if (err) {
+    if(locText) locText.textContent = err;
+    if(locBtn) locBtn.style.display = 'block';
+    if(locVal) { locVal.textContent = 'Semua lokasi'; locVal.classList.add('empty'); }
+  } else {
+    if(locBtn) locBtn.style.display = 'block';
+  }
+}
+
+// ══════════════════════════════════════════
+// KAJIAN CARD HTML
+// ══════════════════════════════════════════
+function kajianCardHTML(k, dist=null, showBm=true) {
+  const spk = getSpeaker(k.speaker_id);
+  const msq = getMosque(k.mosque_id);
+  const isBm = state.bookmarks.includes(k.id);
+  const sc = STATUS[k.status]||STATUS.pending;
+  return `<div class="kcard fi" onclick="openKajian('${k.id}')">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
+      <div style="flex:1">
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">
+          <span style="font-size:11px;font-weight:700;color:var(--p);background:var(--pl);padding:3px 10px;border-radius:20px">${k.topic}</span>
+          <span class="tag ${sc.cls}">${sc.label}</span>
+        </div>
+        <p style="font-weight:700;font-size:15px;line-height:1.35">${k.title}</p>
+      </div>
+      ${showBm?`<button onclick="event.stopPropagation();toggleBmFromCard('${k.id}')" style="padding:4px 4px 4px 8px;color:${isBm?'var(--gold)':'var(--muted)'}">
+        <svg viewBox="0 0 24 24" fill="${isBm?'var(--gold)':'none'}" stroke="${isBm?'var(--gold)':'var(--muted)'}" stroke-width="2" style="width:20px;height:20px"><path d="m19 21-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+      </button>`:''}
+    </div>
+    <div style="display:flex;flex-direction:column;gap:5px">
+      <div style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted)">${iconSVG('calendar','var(--muted)',13)}<span>${fmtDateShort(k.date)}, ${k.time}</span></div>
+      ${spk?`<div style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted)">${iconSVG('book','var(--muted)',13)}<span>${spk.full_name}</span></div>`:''}
+      ${msq?`<div style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted)">${iconSVG('pin','var(--muted)',13)}<span>${msq.name}${dist!=null?' · '+fmtDist(dist):''}</span></div>`:''}
+    </div>
+  </div>`;
+}
+
+function openKajian(id) {
+  state.currentKajianId = id;
+  goScreen('detail');
+  renderDetail(id);
+}
+
+function toggleBmFromCard(id) {
+  if (!state.user) { showToast('Login untuk menyimpan kajian','i'); return; }
+  toggleBookmarkById(id);
+  // Re-render current screen
+  const cur = screenHistory[screenHistory.length-1];
+  if (cur==='home') renderHome();
+  if (cur==='kajian') renderKajianList();
+  if (cur==='saved') renderSaved();
+}
+
+// ══════════════════════════════════════════
+// HOME SCREEN
+// ══════════════════════════════════════════
+
+// ══════════════════════════════════════════
+// HOME PRAYER MINI WIDGET
+// ══════════════════════════════════════════
+const PRAYER_NAMES = ['Subuh','Dzuhur','Ashar','Maghrib','Isya'];
+const PRAYER_ICONS = [
+  // Subuh - bintang & bulan fajar
+  `<svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:36px;height:36px">
+    <circle cx="20" cy="26" r="10" fill="#1B5E38" opacity=".15"/>
+    <path d="M20 16 Q24 20 20 24 Q16 20 20 16Z" fill="#1B5E38" opacity=".4"/>
+    <path d="M14 10 Q18 6 22 10 Q18 14 14 10Z" fill="#D4A017" opacity=".7"/>
+    <line x1="20" y1="4" x2="20" y2="7" stroke="#D4A017" stroke-width="1.5" stroke-linecap="round"/>
+    <line x1="26" y1="6" x2="24.5" y2="8.5" stroke="#D4A017" stroke-width="1.5" stroke-linecap="round"/>
+    <path d="M8 22 Q12 14 20 16 Q14 18 12 26Z" fill="#D4A017" opacity=".8"/>
+  </svg>`,
+  // Dzuhur - matahari penuh
+  `<svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:36px;height:36px">
+    <circle cx="20" cy="20" r="8" fill="#F59E0B"/>
+    <g stroke="#F59E0B" stroke-width="1.8" stroke-linecap="round" opacity=".7">
+      <line x1="20" y1="4" x2="20" y2="8"/>
+      <line x1="20" y1="32" x2="20" y2="36"/>
+      <line x1="4" y1="20" x2="8" y2="20"/>
+      <line x1="32" y1="20" x2="36" y2="20"/>
+      <line x1="8.7" y1="8.7" x2="11.5" y2="11.5"/>
+      <line x1="28.5" y1="28.5" x2="31.3" y2="31.3"/>
+      <line x1="31.3" y1="8.7" x2="28.5" y2="11.5"/>
+      <line x1="11.5" y1="28.5" x2="8.7" y2="31.3"/>
+    </g>
+  </svg>`,
+  // Ashar - matahari rendah sore
+  `<svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:36px;height:36px">
+    <rect x="2" y="28" width="36" height="4" rx="2" fill="#1B5E38" opacity=".1"/>
+    <circle cx="20" cy="26" r="9" fill="#FB923C"/>
+    <g stroke="#FB923C" stroke-width="1.6" stroke-linecap="round" opacity=".6">
+      <line x1="20" y1="8" x2="20" y2="12"/>
+      <line x1="6" y1="14" x2="9" y2="16.5"/>
+      <line x1="34" y1="14" x2="31" y2="16.5"/>
+    </g>
+  </svg>`,
+  // Maghrib - matahari terbenam
+  `<svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:36px;height:36px">
+    <rect x="2" y="26" width="36" height="3" rx="1.5" fill="#1B5E38" opacity=".15"/>
+    <path d="M6 26 Q20 8 34 26Z" fill="#F97316" opacity=".25"/>
+    <circle cx="20" cy="26" r="8" fill="#EF4444"/>
+    <path d="M4 26 L36 26" stroke="#1B5E38" stroke-width="1.5" opacity=".3"/>
+    <path d="M8 30 L32 30" stroke="#1B5E38" stroke-width="1" opacity=".15"/>
+  </svg>`,
+  // Isya - bulan & bintang malam
+  `<svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:36px;height:36px">
+    <circle cx="20" cy="20" r="16" fill="#1e1b4b" opacity=".08"/>
+    <path d="M22 8 Q14 12 14 20 Q14 28 22 32 Q10 30 10 20 Q10 10 22 8Z" fill="#6366f1" opacity=".8"/>
+    <circle cx="28" cy="10" r="1.5" fill="#D4A017"/>
+    <circle cx="32" cy="18" r="1" fill="#D4A017" opacity=".7"/>
+    <circle cx="24" cy="6" r="1" fill="#D4A017" opacity=".6"/>
+  </svg>`
+];
+
+function renderHomePrayerMini() {
+  const el = document.getElementById('home-prayer-cards');
+  if(!el) return;
+  // Dummy times (akan diganti fetch API jika lokasi ada)
+  const times = ['04:30','11:45','15:10','17:52','19:08'];
+  const now = new Date();
+  const nowMin = now.getHours()*60+now.getMinutes();
+  const toMin = t => { const [h,m]=t.split(':'); return parseInt(h)*60+parseInt(m); };
+  let nextIdx = times.findIndex(t=>toMin(t)>nowMin);
+  if(nextIdx<0) nextIdx=0;
+
+  el.innerHTML = PRAYER_NAMES.map((name,i)=>{
+    const isNext = i===nextIdx;
+    const isPast = toMin(times[i]) < nowMin && i!==nextIdx;
+    return `<div onclick="goScreen('prayer')" style="flex:1;min-width:62px;background:${isNext?'var(--p)':'#fff'};border-radius:16px;padding:12px 4px;text-align:center;cursor:pointer;border:1.5px solid ${isNext?'var(--p)':'var(--border)'};box-shadow:${isNext?'0 4px 16px rgba(27,94,56,.25)':'var(--shadow)'};transition:all .2s;scroll-snap-align:start">
+      <div style="margin-bottom:6px;opacity:${isPast?'0.45':'1'}">${PRAYER_ICONS[i]}</div>
+      <div style="font-size:10px;font-weight:700;color:${isNext?'rgba(255,255,255,.8)':'var(--muted)'};letter-spacing:.2px;margin-bottom:2px">${name.toUpperCase()}</div>
+      <div style="font-size:13px;font-weight:800;color:${isNext?'#fff':isPast?'var(--muted)':'var(--text)'}">${times[i]}</div>
+      ${isNext?'<div style="font-size:9px;background:rgba(255,255,255,.2);color:#fff;border-radius:6px;padding:2px 5px;margin-top:4px;font-weight:700">Berikutnya</div>':''}
+    </div>`;
+  }).join('');
+
+  // Jika ada lokasi, fetch waktu sholat asli
+  if(state.location) {
+    const ts = Math.floor(Date.now()/1000);
+    fetch(`https://api.aladhan.com/v1/timings/${ts}?latitude=${state.location.lat}&longitude=${state.location.lng}&method=20`)
+      .then(r=>r.json()).then(d=>{
+        if(!d.data) return;
+        const t = d.data.timings;
+        const realTimes = [t.Fajr,t.Dhuhr,t.Asr,t.Maghrib,t.Isha].map(x=>x.split(' ')[0]);
+        const nowMin2 = new Date().getHours()*60+new Date().getMinutes();
+        let nxt = realTimes.findIndex(t=>toMin(t)>nowMin2);
+        if(nxt<0) nxt=0;
+        el.innerHTML = PRAYER_NAMES.map((name,i)=>{
+          const isN=i===nxt, isP=toMin(realTimes[i])<nowMin2&&i!==nxt;
+          return `<div onclick="goScreen('prayer')" style="flex:1;min-width:62px;background:${isN?'var(--p)':'#fff'};border-radius:16px;padding:12px 4px;text-align:center;cursor:pointer;border:1.5px solid ${isN?'var(--p)':'var(--border)'};box-shadow:${isN?'0 4px 16px rgba(27,94,56,.25)':'var(--shadow)'};scroll-snap-align:start">
+            <div style="margin-bottom:6px;opacity:${isP?'0.45':'1'}">${PRAYER_ICONS[i]}</div>
+            <div style="font-size:10px;font-weight:700;color:${isN?'rgba(255,255,255,.8)':'var(--muted)'};letter-spacing:.2px;margin-bottom:2px">${name.toUpperCase()}</div>
+            <div style="font-size:13px;font-weight:800;color:${isN?'#fff':isP?'var(--muted)':'var(--text)'}">${realTimes[i]}</div>
+            ${isN?'<div style="font-size:9px;background:rgba(255,255,255,.2);color:#fff;border-radius:6px;padding:2px 5px;margin-top:4px;font-weight:700">Berikutnya</div>':''}
+          </div>`;
+        }).join('');
+      }).catch(()=>{});
+  }
+}
+
+function renderHome() {
+  updateLocUI();
+  // Greet
+  const greet = document.getElementById('home-greet');
+  if (greet) greet.textContent = state.user ? `Assalamualaikum, ${state.user.name.split(' ')[0]}` : 'Assalamualaikum';
+  // Prayer mini cards
+  renderHomePrayerMini();
+  // Notif badge
+  const unread = state.notifications.filter(n=>!n.read).length;
+  const badge = document.getElementById('home-notif-badge');
+  if(badge) badge.style.display = unread>0?'block':'none';
+  // Hide search, upcoming etc for guests
+  const searchWrap = document.getElementById('home-search-wrap');
+  if(searchWrap) searchWrap.style.display = state.user ? '' : 'none';
+  const searchResults = document.getElementById('home-search-results');
+  if(searchResults && !state.user) searchResults.style.display = 'none';
+
+  // Nearby kajian
+  const vis = DB.kajian.filter(k=>k.status!=='pending');
+  let list;
+  if (state.location) {
+    list = vis.map(function(k){
+      var m=getMosque(k.mosque_id);
+      var copy={}; for(var _k in k) copy[_k]=k[_k]; copy.dist=m?haversine(state.location.lat,state.location.lng,m.lat,m.lng):Infinity;
+      return copy;
+    }).sort(function(a,b){return a.dist-b.dist;});
+    document.getElementById('nearby-title').textContent = 'Kajian Terdekat';
+  } else {
+    list = vis.filter(k=>k.date===T||k.date===addDays(T,1));
+    document.getElementById('nearby-title').textContent = 'Kajian Hari Ini';
+  }
+  const maxShow = state.user ? 5 : 2;
+  list = list.slice(0, maxShow);
+  const nearbyEl = document.getElementById('nearby-list');
+  if (nearbyEl) {
+    if (list.length>0) {
+      nearbyEl.innerHTML = list.map(k=>kajianCardHTML(k,k.dist!=null&&k.dist!==Infinity?k.dist:null)).join('');
+    } else {
+      nearbyEl.innerHTML = emptyStateHTML('book','Belum ada kajian hari ini','Cek kajian mendatang di halaman Kajian','Jelajahi Kajian',"goScreen('kajian')");
+    }
+    const gCta = document.getElementById('home-guest-cta');
+    if(gCta) gCta.style.display = (!state.user && list.length > 0) ? 'block' : 'none';
+  }
+  // Upcoming (hidden for guests)
+  const upcoming = vis.filter(k=>k.date>T).slice(0,4);
+  const upSec = document.getElementById('upcoming-section');
+  if(upSec) {
+    if(state.user && upcoming.length>0) {
+      upSec.style.display='block';
+      document.getElementById('upcoming-list').innerHTML = upcoming.map(k=>kajianCardHTML(k)).join('');
+    } else upSec.style.display='none';
+  }
+  // Nav
+  injectNavs();
+}
+
+// ══════════════════════════════════════════
+// HOME SEARCH
+// ══════════════════════════════════════════
+function clearHomeSearch() {
+  state.searchQ=''; state.searchDate=''; state.searchLoc='';
+  const qi=document.getElementById('home-q'); if(qi) qi.value='';
+  clearLocFilter(); clearSearchDate();
+  const wr=document.getElementById('home-search-results'); if(wr) wr.style.display='none';
+  const prayerMini=document.getElementById('home-prayer-mini');
+  var nbl=document.getElementById('nearby-list'); var nearbyWrap=nbl?nbl.parentElement:null;
+  var ups=document.getElementById('upcoming-section'); var upSection=ups?ups.parentElement:null;
+  if(prayerMini) prayerMini.style.display='';
+  if(nearbyWrap) nearbyWrap.style.display='';
+  if(upSection) upSection.style.display='';
+}
+function openDatePicker() {
+  state.datePurpose = 'home';
+  document.getElementById('modal-date-inp').value = state.searchDate;
+  openModal('modal-date');
+}
+function clearSearchDate() {
+  state.searchDate = '';
+  document.getElementById('home-date-val').textContent = 'Pilih tanggal';
+  document.getElementById('home-date-val').classList.add('empty');
+  document.getElementById('home-date-clear').style.display = 'none';
+}
+function clearModalDate() {
+  if(state.datePurpose==='home') clearSearchDate();
+  else { state.kajianDate=''; document.getElementById('kajian-date-label').textContent='Tanggal'; document.getElementById('kajian-date-btn').style.background='var(--pl)'; document.getElementById('kajian-date-btn').style.color='var(--p)'; renderKajianList(); }
+  closeModal('modal-date');
+}
+function confirmModalDate() {
+  const val = document.getElementById('modal-date-inp').value;
+  if(state.datePurpose==='home'){
+    state.searchDate = val;
+    const el = document.getElementById('home-date-val');
+    if(val){ el.textContent=fmtDateShort(val); el.classList.remove('empty'); document.getElementById('home-date-clear').style.display='flex'; }
+    else { el.textContent='Pilih tanggal'; el.classList.add('empty'); document.getElementById('home-date-clear').style.display='none'; }
+  } else {
+    state.kajianDate = val;
+    const btn = document.getElementById('kajian-date-btn');
+    if(val){ document.getElementById('kajian-date-label').textContent=fmtDateShort(val); btn.style.background='var(--p)'; btn.style.color='#fff'; } else { document.getElementById('kajian-date-label').textContent='Tanggal'; btn.style.background='var(--pl)'; btn.style.color='var(--p)'; }
+    renderKajianList();
+  }
+  closeModal('modal-date');
+}
+// ══════════════════════════════════════════
+// SEARCH AUTOCOMPLETE SUGGESTIONS
+// ══════════════════════════════════════════
+function onSearchSuggest(ctx) {
+  var inputEl = document.getElementById(ctx==='home'?'home-q':'kajian-q');
+  var acEl = document.getElementById(ctx==='home'?'home-q-ac':'kajian-q-ac');
+  if (!inputEl||!acEl) return;
+  var q = inputEl.value.trim().toLowerCase();
+  if (q.length < 2) { acEl.classList.remove('open'); return; }
+  var results = [];
+  // Match speakers
+  DB.speakers.forEach(function(s) {
+    if (s.full_name.toLowerCase().indexOf(q) !== -1) {
+      results.push({type:'speaker', id:s.id, label:s.full_name, sub:'Ustadz/Pembicara'});
+    }
+  });
+  // Match kajian titles
+  DB.kajian.forEach(function(k) {
+    if (k.status==='pending'||k.status==='cancelled') return;
+    if (k.title.toLowerCase().indexOf(q) !== -1) {
+      var spk = getSpeaker(k.speaker_id);
+      results.push({type:'kajian', id:k.id, label:k.title, sub:spk?spk.full_name:'', extra:k.topic});
+    }
+  });
+  if (results.length === 0) { acEl.classList.remove('open'); return; }
+  // Limit to 6
+  var html = results.slice(0,6).map(function(r) {
+    if (r.type==='speaker') {
+      return '<div class="ac-item" onclick="selectSearchSuggestion(\''+ctx+'\',\'speaker\',\''+r.id+'\',\''+r.label.replace(/'/g,"\\'")+'\')" style="display:flex;align-items:center;gap:10px">'
+        + '<div style="width:32px;height:32px;background:var(--pl);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg viewBox="0 0 24 24" fill="none" stroke="var(--p)" stroke-width="2" style="width:16px;height:16px"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>'
+        + '<div><div style="font-weight:600;font-size:14px">'+r.label+'</div><div class="ac-item-sub">'+r.sub+'</div></div></div>';
+    } else {
+      return '<div class="ac-item" onclick="selectSearchSuggestion(\''+ctx+'\',\'kajian\',\''+r.id+'\',\''+r.label.replace(/'/g,"\\'")+'\')" style="display:flex;align-items:center;gap:10px">'
+        + '<div style="width:32px;height:32px;background:var(--pl);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg viewBox="0 0 24 24" fill="none" stroke="var(--p)" stroke-width="2" style="width:16px;height:16px"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></div>'
+        + '<div><div style="font-weight:600;font-size:14px">'+r.label+'</div><div class="ac-item-sub">'+(r.sub?(r.sub+' &bull; '):'')+r.extra+'</div></div></div>';
+    }
+  }).join('');
+  acEl.innerHTML = html;
+  acEl.classList.add('open');
+}
+function selectSearchSuggestion(ctx, type, id, label) {
+  var inputEl = document.getElementById(ctx==='home'?'home-q':'kajian-q');
+  closeSearchAC(ctx);
+  if (type==='kajian') {
+    openKajian(id);
+  } else {
+    // Speaker selected - fill input with name and trigger search
+    if (inputEl) inputEl.value = label;
+    if (ctx==='home') { doHomeSearch(); }
+    else { renderKajianList(); }
+  }
+}
+function closeSearchAC(ctx) {
+  var acEl = document.getElementById(ctx==='home'?'home-q-ac':'kajian-q-ac');
+  if (acEl) acEl.classList.remove('open');
+}
+// Close autocomplete when clicking outside
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('#home-q') && !e.target.closest('#home-q-ac')) closeSearchAC('home');
+  if (!e.target.closest('#kajian-q') && !e.target.closest('#kajian-q-ac')) closeSearchAC('kajian');
+});
+
+function doHomeSearch() {
+  closeSearchAC('home');
+  state.searchQ = document.getElementById('home-q').value.trim();
+  var locInp=document.getElementById('home-loc-inp'); state.searchLoc = (locInp?locInp.value:'').trim();
+  const date = state.searchDate;
+  let results = DB.kajian.filter(k=>k.status!=='pending'&&k.status!=='cancelled');
+  if(state.searchQ){
+    const q=state.searchQ.toLowerCase();
+    results=results.filter(k=>{const spk=getSpeaker(k.speaker_id);return k.title.toLowerCase().includes(q)||(spk&&spk.full_name.toLowerCase().includes(q));});
+  }
+  if(date) results=results.filter(k=>k.date===date);
+  if(state.searchLoc){const sl=state.searchLoc.toLowerCase();results=results.filter(k=>{const m=getMosque(k.mosque_id);return m&&(m.city.toLowerCase().includes(sl)||m.district.toLowerCase().includes(sl));});}
+  const wrap=document.getElementById('home-search-results');
+  const titleEl=document.getElementById('home-results-title');
+  if(!wrap) return;
+  const prayerMini=document.getElementById('home-prayer-mini');
+  var nbl2=document.getElementById('nearby-list'); var nearbyWrap=nbl2?nbl2.parentElement:null;
+  var ups2=document.getElementById('upcoming-section'); var upSection=ups2?ups2.parentElement:null;
+  if(!state.searchQ&&!date&&!state.searchLoc){
+    wrap.style.display='none';
+    if(prayerMini) prayerMini.style.display='';
+    if(nearbyWrap) nearbyWrap.style.display='';
+    if(upSection) upSection.style.display='';
+    return;
+  }
+  wrap.style.display='block';
+  if(prayerMini) prayerMini.style.display='none';
+  if(nearbyWrap) nearbyWrap.style.display='none';
+  if(upSection) upSection.style.display='none';
+  // Scroll to top
+  const sc=document.querySelector('#scr-home .screen-content');
+  if(sc) sc.scrollTop=0;
+  if(titleEl) titleEl.textContent=results.length?`${results.length} kajian ditemukan`:'Tidak ada kajian ditemukan';
+  const listEl=document.getElementById('home-results-list');
+  if(listEl){
+    if(results.length) listEl.innerHTML=results.slice(0,8).map(k=>kajianCardHTML(k)).join('');
+    else listEl.innerHTML=emptyStateHTML('search','Tidak ditemukan','Coba kata kunci atau lokasi lain');
+  }
+}
+
+// ══════════════════════════════════════════
+// KAJIAN LIST SCREEN
+// ══════════════════════════════════════════
+function renderKajianList() {
+  // Add button for contributor/admin
+  const addBtn = document.getElementById('kajian-add-btn');
+  var ur=state.user?state.user.role:'';
+  if(addBtn) addBtn.style.display = (ur==='contributor'||ur==='admin')?'flex':'none';
+  // Topics
+  var allTopics = Array.from(new Set(DB.kajian.map(function(k){return k.topic;})));
+  const tabsEl = document.getElementById('topic-tabs');
+  if(tabsEl) tabsEl.innerHTML = `<button class="tab ${!state.kajianTopic?'active':''}" onclick="setKajianTopic('',this)">Semua</button>`
+    + allTopics.map(t=>`<button class="tab ${state.kajianTopic===t?'active':''}" onclick="setKajianTopic('${t}',this)">${t}</button>`).join('');
+  // Filter
+  var kqEl=document.getElementById('kajian-q'); const q = (kqEl?kqEl.value:'')||state.searchQ||'';
+  const isAdmin = state.user&&state.user.role==='admin';
+  let list = DB.kajian.filter(k=>{
+    if(k.status==='pending' && !isAdmin) return false;
+    var spkF=getSpeaker(k.speaker_id); if(q && !(spkF&&spkF.full_name.toLowerCase().includes(q.toLowerCase())) && !k.title.toLowerCase().includes(q.toLowerCase())) return false;
+    if(state.kajianDate && k.date!==state.kajianDate) return false;
+    if(state.kajianTopic && k.topic!==state.kajianTopic) return false;
+    return true;
+  }).map(k=>{
+    const m=getMosque(k.mosque_id);
+    var copy2={}; for(var _k2 in k) copy2[_k2]=k[_k2]; copy2.dist=state.location&&m?haversine(state.location.lat,state.location.lng,m.lat,m.lng):null; return copy2;
+  }).sort((a,b)=>{if(a.date!==b.date)return a.date.localeCompare(b.date);return(a.dist!=null?a.dist:Infinity)-(b.dist!=null?b.dist:Infinity);});
+  const listEl = document.getElementById('kajian-list');
+  if(listEl) {
+    listEl.innerHTML = list.length>0
+      ? list.map(k=>kajianCardHTML(k,k.dist)).join('')
+      : emptyStateHTML('book','Tidak ada kajian','Coba ubah filter atau kata kunci','Reset',"resetKajianFilter()");
+  }
+  state.searchQ = '';
+}
+function setKajianTopic(t) { state.kajianTopic=t; renderKajianList(); }
+function resetKajianFilter() { state.kajianTopic=''; state.kajianDate=''; if(document.getElementById('kajian-q'))document.getElementById('kajian-q').value=''; renderKajianList(); }
+function openKajianDatePicker() { state.datePurpose='kajian'; document.getElementById('modal-date-inp').value=state.kajianDate; openModal('modal-date'); }
+
+// ══════════════════════════════════════════
+// DETAIL SCREEN
+// ══════════════════════════════════════════
+function renderDetail(id) {
+  const k = DB.kajian.find(x=>x.id===id);
+  if(!k) return;
+  const spk = getSpeaker(k.speaker_id), msq = getMosque(k.mosque_id);
+  const sc = STATUS[k.status]||STATUS.pending;
+  // Hero
+  document.getElementById('detail-tags').innerHTML = `<span style="background:rgba(255,255,255,.2);color:#fff;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700">${k.topic}</span><span class="tag ${sc.cls}">${sc.label}</span>`;
+  document.getElementById('detail-title').textContent = k.title;
+  document.getElementById('detail-meta').innerHTML = `
+    ${spk?`<div style="display:flex;gap:6px;color:rgba(255,255,255,.85);font-size:13px;align-items:center">${iconSVG('book','rgba(255,255,255,.85)',13)}<span>${spk.full_name}</span></div>`:''}
+    <div style="display:flex;gap:6px;color:rgba(255,255,255,.85);font-size:13px;align-items:center">${iconSVG('calendar','rgba(255,255,255,.85)',13)}<span>${fmtDateShort(k.date)}, ${k.time}</span></div>`;
+  // Alert
+  const alertEl = document.getElementById('detail-alert');
+  if(k.status==='postponed') alertEl.innerHTML = `<div class="alert-banner alert-o"><svg viewBox="0 0 24 24" fill="none" stroke="#BF360C" stroke-width="2" style="width:16px;height:16px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><p style="font-size:13px;color:#BF360C;font-weight:600">Kajian ini sedang ditunda. Pantau terus untuk informasi terbaru.</p></div>`;
+  else if(k.status==='cancelled') alertEl.innerHTML = `<div class="alert-banner alert-r"><svg viewBox="0 0 24 24" fill="none" stroke="#B71C1C" stroke-width="2" style="width:16px;height:16px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><p style="font-size:13px;color:#B71C1C;font-weight:600">Kajian ini telah dibatalkan.</p></div>`;
+  else alertEl.innerHTML = '';
+  // Actions
+  const actEl = document.getElementById('detail-actions');
+  if(state.user) {
+    actEl.style.display='block';
+    updateDetailActions();
+  } else actEl.style.display='none';
+  // Edit/Del button — hanya pemilik kajian atau admin
+  const ew=document.getElementById('detail-edit-wrap');
+  if(ew){
+    const isOwner=state.user&&(state.user.role==='admin'||(k.submitted_by&&k.submitted_by===state.user.id));
+    ew.style.display=isOwner?'block':'none';
+    // Admin punya semua, kontributor hanya kajian milik sendiri
+    const delBtn=document.getElementById('detail-del-btn');
+    if(delBtn) delBtn.style.display='flex';
+  }
+  // Info
+  const distToMq = state.location&&msq?haversine(state.location.lat,state.location.lng,msq.lat,msq.lng):null;
+  const submitter = DB.users.find(u=>u.id===k.submitted_by);
+  const submitterIsContrib = submitter && (submitter.role==='contributor'||submitter.role==='admin');
+  const rows = [
+    {icon:'calendar',label:'Tanggal',val:fmtDateLong(k.date)},
+    {icon:'clock',label:'Waktu',val:k.time+' WIB'},
+    spk&&{icon:'book',label:'Pembicara',val:spk.full_name+(spk.verified?' <span class="v-check">✓ Terverifikasi</span>':'')},
+    msq&&{icon:'pin',label:'Lokasi',val:`${msq.name}<br><span style="color:var(--muted);font-size:12px">${msq.address}${distToMq?'<br>'+fmtDist(distToMq)+' dari posisi Anda':''}</span>`},
+    submitter&&{icon:'book',label:'Kontributor',val:`${submitter.name}${submitterIsContrib?' <span style="display:inline-flex;align-items:center;gap:3px;background:#E3F2FD;color:#1565C0;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;vertical-align:middle"><svg viewBox="0 0 24 24" fill="#1565C0" stroke="#fff" stroke-width="2.5" style="width:12px;height:12px"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Terverifikasi</span>':''}`},
+  ].filter(Boolean);
+  document.getElementById('detail-info').innerHTML = rows.map(r=>`
+    <div style="display:flex;gap:12px;margin-bottom:14px">
+      <div style="width:36px;height:36px;background:var(--pl);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0">${iconSVG(r.icon,'var(--p)',16)}</div>
+      <div><div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.3px">${r.label}</div><div style="font-size:14px;font-weight:500;margin-top:3px;line-height:1.5">${r.val}</div></div>
+    </div>`).join('')
+    +(k.description?`<div style="border-top:1px solid var(--border);padding-top:12px;margin-top:4px"><p style="font-size:13px;color:var(--muted);line-height:1.65">${k.description}</p></div>`:'');
+  // Attend button
+  renderAttendButton(k, distToMq);
+}
+
+function updateDetailActions() {
+  const id = state.currentKajianId;
+  if(!id) return;
+  const isBm = state.bookmarks.includes(id), isRem = state.reminders.includes(id);
+  const bmBtn = document.getElementById('btn-bm'), remBtn = document.getElementById('btn-rem');
+  if(bmBtn) {
+    bmBtn.style.borderColor = isBm?'var(--gold)':'var(--border)';
+    bmBtn.style.background = isBm?'#FFF8E1':'#fff';
+    bmBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="${isBm?'var(--gold)':'none'}" stroke="${isBm?'var(--gold)':'var(--muted)'}" stroke-width="2" style="width:20px;height:20px"><path d="m19 21-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg><span style="font-size:11px;font-weight:700;color:${isBm?'var(--gold)':'var(--muted)'}">Simpan</span>`;
+  }
+  if(remBtn) {
+    remBtn.style.borderColor = isRem?'var(--p)':'var(--border)';
+    remBtn.style.background = isRem?'var(--pl)':'#fff';
+    remBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="${isRem?'var(--p)':'var(--muted)'}" stroke-width="2" style="width:20px;height:20px"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg><span style="font-size:11px;font-weight:700;color:${isRem?'var(--p)':'var(--muted)'}">Pengingat</span>`;
+  }
+}
+
+function renderAttendButton(k, distToMq) {
+  const wrap = document.getElementById('detail-attend-wrap');
+  if(!wrap) return;
+  if(!state.user || k.status!=='approved') { wrap.innerHTML=''; return; }
+  const attended = state.attendances.some(a=>a.kajian_id===k.id);
+  if(attended) {
+    wrap.innerHTML=`<div style="background:var(--pl);border-radius:14px;padding:16px;display:flex;align-items:center;justify-content:center;gap:8px"><svg viewBox="0 0 24 24" fill="none" stroke="var(--p)" stroke-width="2.5" style="width:20px;height:20px"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg><p style="font-weight:700;color:var(--p)">Anda Tercatat Hadir</p></div>`;
+  } else {
+    const distInfo = distToMq?`<p style="text-align:center;font-size:12px;color:var(--muted);margin-top:8px">Anda berada ${fmtDist(distToMq)} dari masjid ${distToMq<=200?'✓':'(min. 200m)'}</p>`:'';
+    wrap.innerHTML=`<button class="btn btn-p" onclick="confirmAttend('${k.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Konfirmasi Kehadiran</button>${distInfo}`;
+  }
+}
+
+function toggleBookmark() { if(!state.user){showToast('Login untuk menyimpan kajian','i');return;} toggleBookmarkById(state.currentKajianId); updateDetailActions(); }
+function toggleReminder() { if(!state.user){showToast('Login untuk pengingat','i');return;} toggleReminderById(state.currentKajianId); updateDetailActions(); }
+function shareKajian() { showToast('Link kajian disalin!','s'); }
+function confirmAttend(id) {
+  if(!state.user){showToast('Login untuk konfirmasi','i');return;}
+  const k = DB.kajian.find(x=>x.id===id);
+  const msq = getMosque(k.mosque_id);
+  if(!state.location){showToast('Aktifkan lokasi untuk konfirmasi kehadiran','w');return;}
+  if(!msq) return;
+  const dist = haversine(state.location.lat,state.location.lng,msq.lat,msq.lng);
+  if(dist>200) {
+    document.getElementById('att-err-msg').innerHTML = `Anda harus berada dalam radius <strong>200 meter</strong> dari lokasi kajian untuk konfirmasi kehadiran. Jarak Anda saat ini: <strong>${fmtDist(dist)}</strong>.`;
+    openModal('modal-att');
+  } else {
+    state.attendances.push({kajian_id:id,timestamp:new Date().toISOString()});
+    fsSaveUserData();
+    showToast('Kehadiran tercatat! ✓','s');
+    renderDetail(id);
+    document.getElementById('stat-att').textContent = state.attendances.length;
+  }
+}
+
+// ══════════════════════════════════════════
+// BOOKMARK / REMINDER
+// ══════════════════════════════════════════
+function toggleBookmarkById(id) {
+  const i = state.bookmarks.indexOf(id);
+  if(i>-1) { state.bookmarks.splice(i,1); showToast('Dihapus dari simpanan','i'); }
+  else { state.bookmarks.push(id); showToast('Kajian disimpan ✓','s'); }
+  fsSaveUserData();
+}
+function toggleReminderById(id) {
+  const i = state.reminders.indexOf(id);
+  if(i>-1) { state.reminders.splice(i,1); showToast('Pengingat dinonaktifkan','i'); }
+  else { state.reminders.push(id); showToast('Pengingat diaktifkan! ✓','s'); }
+  fsSaveUserData();
+  document.getElementById('stat-rem').textContent = state.reminders.length;
+}
+
+// ══════════════════════════════════════════
+// PRAYER SCREEN
+// ══════════════════════════════════════════
+function renderPrayer() {
+  const NAMES = ['Subuh','Dzuhur','Ashar','Maghrib','Isya'];
+  const KEYS  = ['Fajr','Dhuhr','Asr','Maghrib','Isha'];
+  const locEl = document.getElementById('prayer-loc');
+  const dateEl = document.getElementById('prayer-date');
+  if(dateEl) dateEl.textContent = fmtDateLong(T);
+  const content = document.getElementById('prayer-content');
+  if(!content) return;
+  if(!state.location && !state.locationError) {
+    if(locEl) locEl.textContent = 'Memuat lokasi...';
+    content.innerHTML = `<div class="empty-state"><div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="var(--p)" stroke-width="1.5" style="width:32px;height:32px"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></div><p style="font-weight:700;font-size:17px">Lokasi diperlukan</p><p style="font-size:14px;color:var(--muted)">Aktifkan lokasi untuk melihat waktu sholat yang akurat</p><button class="btn btn-p btn-sm" onclick="getLocation()">Aktifkan Lokasi</button></div>`;
+    return;
+  }
+  if(state.locationError) {
+    if(locEl) locEl.textContent = 'Lokasi tidak tersedia';
+    content.innerHTML = `<div class="empty-state"><div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="var(--p)" stroke-width="1.5" style="width:32px;height:32px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div><p style="font-weight:700">Lokasi tidak tersedia</p><button class="btn btn-p btn-sm" onclick="getLocation()">Aktifkan Lokasi</button></div>`;
+    return;
+  }
+  if(locEl) locEl.textContent = `${state.location.district}, ${state.location.city}`;
+  content.innerHTML = `<div style="display:flex;justify-content:center;padding:40px"><div class="spin spin-g"></div></div>`;
+  const ts = Math.floor(Date.now()/1000);
+  fetch(`https://api.aladhan.com/v1/timings/${ts}?latitude=${state.location.lat}&longitude=${state.location.lng}&method=20`)
+    .then(r=>r.json()).then(d=>{
+      if(!(d.data&&d.data.timings)) throw new Error();
+      const times = d.data.timings;
+      const now = new Date(), nm = now.getHours()*60+now.getMinutes();
+      let cur = -1;
+      KEYS.forEach((k,i)=>{ const[h,m]=times[k].split(':').map(Number); if(nm>=h*60+m)cur=i; });
+      content.innerHTML = `<div class="card" style="overflow:hidden;margin-bottom:12px">
+        ${NAMES.map((n,i)=>`<div class="prayer-row ${cur===i?'prayer-active':'prayer-inactive'}">
+          <div style="display:flex;align-items:center;gap:10px">
+            ${cur===i?'<div style="width:8px;height:8px;background:#fff;border-radius:50%"></div>':''}
+            <span style="font-weight:${cur===i?800:600};font-size:16px">${n}</span>
+            ${cur===i?'<span style="font-size:11px;font-weight:700;background:rgba(255,255,255,.2);padding:2px 8px;border-radius:20px">Sekarang</span>':''}
+          </div>
+          <span style="font-weight:700;font-size:18px">${(times[KEYS[i]]||'').substring(0,5)}</span>
+        </div>`).join('')}
+      </div>
+      <p style="text-align:center;font-size:12px;color:var(--muted);padding-bottom:16px">Data dari Aladhan API · Metode Kemenag RI</p>`;
+    }).catch(()=>{ content.innerHTML=`<div class="card" style="padding:20px;text-align:center"><p style="color:var(--danger);font-size:14px">Gagal memuat waktu sholat</p><button class="btn btn-o btn-sm" onclick="renderPrayer()" style="margin-top:12px">Coba Lagi</button></div>`; });
+  injectNavs();
+}
+
+// ══════════════════════════════════════════
+// QIBLA SCREEN
+// ══════════════════════════════════════════
+function renderQibla() {
+  const locEl = document.getElementById('qibla-loc');
+  const content = document.getElementById('qibla-content');
+  if(!content) return;
+  if(!state.location&&!state.locationError) {
+    if(locEl)locEl.textContent='Memuat lokasi...';
+    content.innerHTML=`<div class="empty-state"><div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="var(--p)" stroke-width="1.5" style="width:32px;height:32px"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></div><p style="font-weight:700">Lokasi diperlukan</p><button class="btn btn-p btn-sm" onclick="getLocation()">Aktifkan Lokasi</button></div>`;
+    return;
+  }
+  if(state.locationError){
+    if(locEl)locEl.textContent='Lokasi tidak tersedia';
+    content.innerHTML=`<div class="empty-state"><div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="var(--p)" stroke-width="1.5" style="width:32px;height:32px"><circle cx="12" cy="12" r="10"/></svg></div><p style="font-weight:700">Lokasi tidak tersedia</p><button class="btn btn-p btn-sm" onclick="getLocation()">Aktifkan Lokasi</button></div>`;
+    return;
+  }
+  if(locEl) locEl.textContent = `${state.location.district}, ${state.location.city}`;
+  const bearing = qiblaBearing(state.location.lat, state.location.lng);
+  content.innerHTML = `
+    <div id="qibla-calib" style="background:#FFF8E1;border-radius:12px;padding:10px 14px;margin-bottom:20px;display:flex;gap:8px;align-items:center">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#BF360C" stroke-width="2" style="width:16px;height:16px;flex-shrink:0"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.13"/></svg>
+      <p style="font-size:13px;color:#BF360C;font-weight:600">Kalibrasi: gerakkan perangkat membentuk angka 8</p>
+    </div>
+    <div id="compass-wrap" style="position:relative;width:260px;height:260px;margin:0 auto">
+      <svg id="compass-base" viewBox="0 0 260 260" style="position:absolute;inset:0;width:100%;height:100%">
+        <circle cx="130" cy="130" r="120" fill="var(--pl)" stroke="var(--border)" stroke-width="2"/>
+        <circle cx="130" cy="130" r="4" fill="var(--p)"/>
+        <text x="130" y="28" text-anchor="middle" dominant-baseline="middle" fill="#C62828" font-size="14" font-weight="700" font-family="Plus Jakarta Sans">U</text>
+        <text x="232" y="130" text-anchor="middle" dominant-baseline="middle" fill="var(--muted)" font-size="14" font-weight="700" font-family="Plus Jakarta Sans">T</text>
+        <text x="130" y="232" text-anchor="middle" dominant-baseline="middle" fill="var(--muted)" font-size="14" font-weight="700" font-family="Plus Jakarta Sans">S</text>
+        <text x="28" y="130" text-anchor="middle" dominant-baseline="middle" fill="var(--muted)" font-size="14" font-weight="700" font-family="Plus Jakarta Sans">B</text>
+        ${Array.from({length:36},(_,i)=>{ const a=i*10*Math.PI/180,r1=78,r2=i%9===0?66:73; return `<line x1="${130+r1*Math.sin(a)}" y1="${130-r1*Math.cos(a)}" x2="${130+r2*Math.sin(a)}" y2="${130-r2*Math.cos(a)}" stroke="var(--border)" stroke-width="${i%9===0?2:1}"/>`; }).join('')}
+      </svg>
+      <svg id="compass-needle" viewBox="0 0 260 260" style="position:absolute;inset:0;width:100%;height:100%;transition:transform .4s ease;transform-origin:50% 50%">
+        <polygon points="130,32 122,130 130,144 138,130" fill="var(--p)" opacity=".95"/>
+        <polygon points="130,228 122,130 130,144 138,130" fill="var(--pm)" opacity=".65"/>
+        <circle cx="130" cy="130" r="9" fill="var(--p)"/>
+        <text x="130" y="57" text-anchor="middle" fill="#fff" font-size="9" font-weight="700" font-family="Plus Jakarta Sans">KA'BAH</text>
+      </svg>
+    </div>
+    <div style="text-align:center;margin-top:22px">
+      <p id="qibla-bearing-text" style="font-size:18px;font-weight:800;color:var(--p)">Kiblat: ${Math.round(bearing)}°</p>
+      <p id="qibla-hdg-text" style="font-size:13px;color:var(--muted);margin-top:4px">Gerakkan perangkat untuk membaca arah</p>
+    </div>`;
+  startQiblaCompass(bearing);
+}
+
+function startQiblaCompass(bearing) {
+  if(state.qiblaOrientHandler) {
+    window.removeEventListener('deviceorientationabsolute',state.qiblaOrientHandler,true);
+    window.removeEventListener('deviceorientation',state.qiblaOrientHandler,true);
+  }
+  let lastHeadings=[], calibrated=false;
+  const handler = e => {
+    var wch=e.webkitCompassHeading; const alpha = (wch!=null)?wch:(e.alpha?(360-e.alpha):null);
+    if(alpha===null) return;
+    lastHeadings=lastHeadings.slice(-4).concat([alpha]);
+    const avg=lastHeadings.reduce((a,b)=>a+b,0)/lastHeadings.length;
+    const rot = bearing-avg;
+    const needle = document.getElementById('compass-needle');
+    if(needle) needle.style.transform=`rotate(${rot}deg)`;
+    const hdgEl = document.getElementById('qibla-hdg-text');
+    if(hdgEl) hdgEl.textContent=`Arah perangkat: ${Math.round(avg)}°`;
+    if(lastHeadings.length>=5&&!calibrated) {
+      calibrated=true;
+      const calib=document.getElementById('qibla-calib');
+      if(calib)calib.style.display='none';
+    }
+  };
+  state.qiblaOrientHandler = handler;
+  const req = async () => {
+    if(typeof DeviceOrientationEvent!=='undefined'&&typeof DeviceOrientationEvent.requestPermission==='function') {
+      try{ const p=await DeviceOrientationEvent.requestPermission(); if(p!=='granted'){showToast('Izin orientasi ditolak','e');return;} }
+      catch(e){ showToast('Gagal meminta izin sensor','e'); return; }
+    }
+    window.addEventListener('deviceorientationabsolute',handler,true);
+    window.addEventListener('deviceorientation',handler,true);
+  };
+  req();
+}
+
+// ══════════════════════════════════════════
+// SAVED / REMINDERS / ATTENDANCE
+// ══════════════════════════════════════════
+function renderSaved() {
+  const items = DB.kajian.filter(k=>state.bookmarks.includes(k.id));
+  document.getElementById('saved-list').innerHTML = items.length>0
+    ? items.map(k=>kajianCardHTML(k)).join('')
+    : emptyStateHTML('book','Belum ada kajian tersimpan','Simpan kajian yang menarik untuk ditampilkan di sini','Jelajahi Kajian',"goScreen('kajian')");
+}
+function renderReminders() {
+  const items = DB.kajian.filter(k=>state.reminders.includes(k.id));
+  document.getElementById('reminders-list').innerHTML = items.length>0
+    ? items.map(k=>`<div class="kcard" style="display:flex;gap:12px;align-items:center">
+        <div style="flex:1;cursor:pointer" onclick="openKajian('${k.id}')">
+          <p style="font-weight:700;font-size:14px">${k.title}</p>
+          <p style="font-size:12px;color:var(--muted);margin-top:3px">${fmtDateShort(k.date)}, ${k.time}</p>
+        </div>
+        <button onclick="toggleReminderById('${k.id}');renderReminders()" style="padding:8px;color:var(--p)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="var(--p)" stroke-width="2" style="width:20px;height:20px"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        </button>
+      </div>`).join('')
+    : emptyStateHTML('bell','Belum ada pengingat','Aktifkan pengingat dari halaman detail kajian','Cari Kajian',"goScreen('kajian')");
+}
+function renderAttendance() {
+  var sorted = state.attendances.slice().sort(function(a,b){return b.timestamp.localeCompare(a.timestamp);});
+  const el = document.getElementById('attendance-list');
+  el.innerHTML = sorted.length>0
+    ? sorted.map(a=>{
+        const k=DB.kajian.find(x=>x.id===a.kajian_id);
+        const spk=k&&getSpeaker(k.speaker_id);
+        if(!k)return'';
+        return `<div class="kcard" onclick="openKajian('${k.id}')">
+          <div style="display:flex;gap:12px;align-items:flex-start">
+            <div style="width:36px;height:36px;background:var(--pl);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg viewBox="0 0 24 24" fill="none" stroke="var(--p)" stroke-width="2.5" style="width:18px;height:18px"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div>
+            <div style="flex:1">
+              <p style="font-weight:700;font-size:14px">${k.title}</p>
+              ${spk?`<p style="font-size:12px;color:var(--muted);margin-top:2px">${spk.full_name}</p>`:''}
+              <p style="font-size:11px;color:var(--muted);margin-top:4px">Hadir: ${new Date(a.timestamp).toLocaleString('id-ID')}</p>
+            </div>
+          </div>
+        </div>`;
+      }).join('')
+    : emptyStateHTML('check','Belum ada riwayat kehadiran','Konfirmasi kehadiran saat menghadiri kajian','Cari Kajian',"goScreen('kajian')");
+}
+
+// ══════════════════════════════════════════
+// NOTIFICATIONS
+// ══════════════════════════════════════════
+function renderNotifs() {
+  const el = document.getElementById('notif-list');
+  const notifs = state.notifications;
+  el.innerHTML = notifs.length>0
+    ? notifs.map((n,i)=>`
+      <div onclick="markRead(${i})" style="background:${n.read?'#fff':'var(--pl)'};border-radius:14px;padding:16px;border:1px solid ${n.read?'var(--border)':'var(--pm)'};margin-bottom:8px;cursor:pointer">
+        <div style="display:flex;gap:10px">
+          <div style="width:36px;height:36px;background:var(--p);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" style="width:16px;height:16px"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div>
+          <div style="flex:1"><p style="font-weight:${n.read?500:700};font-size:14px;line-height:1.4">${n.message}</p><p style="font-size:11px;color:var(--muted);margin-top:4px">${new Date(n.timestamp).toLocaleString('id-ID')}</p></div>
+          ${!n.read?`<div style="width:8px;height:8px;background:var(--p);border-radius:50%;flex-shrink:0;margin-top:4px"></div>`:''}
+        </div>
+      </div>`).join('')
+    : emptyStateHTML('bell','Belum ada notifikasi','Notifikasi kajian baru akan muncul di sini');
+  injectNavs();
+}
+function markRead(i) { state.notifications[i].read=true; renderNotifs(); }
+function markAllRead() { state.notifications.forEach(n=>n.read=true); renderNotifs(); showToast('Semua notifikasi dibaca','s'); }
+
+// EDIT KAJIAN (FIX #3)
+function editKajianAsContrib(){state.editKajianId=state.currentKajianId;goScreen('submit');}
+function contribDeleteKajian(){
+  const id=state.currentKajianId;
+  const k=DB.kajian.find(x=>x.id===id);
+  if(!k) return;
+  // Verifikasi hak: admin atau pemilik kajian
+  if(!state.user||(state.user.role!=='admin'&&k.submitted_by!==state.user.id)){showToast('Tidak memiliki izin','e');return;}
+  confirmDelete('kajian',id,encodeURIComponent(k.title));
+}
+function adminEditKajian(id){state.editKajianId=id;goScreen('submit');}
+
+// ══════════════════════════════════════════
+// SUBMIT
+// ══════════════════════════════════════════
+function initSubmit() {
+  const eid = state.editKajianId;
+  const hdr = document.getElementById('submit-hdr-title');
+  if(hdr) hdr.textContent = eid ? 'Edit Kajian' : 'Submit Kajian';
+  const btnText = document.getElementById('sub-btn-text');
+  var subRole=state.user?state.user.role:'';
+  if(btnText) btnText.textContent = eid ? 'Simpan Perubahan' : (subRole==='admin'?'Publikasikan Kajian':'Kirim untuk Review');
+  const info = document.getElementById('sub-info');
+  if(info) info.style.display = (subRole==='admin'||eid) ? 'none' : 'block';
+  const dateEl = document.getElementById('sub-date');
+  if(dateEl) dateEl.min = T;
+  if(eid) {
+    const k = DB.kajian.find(x=>x.id===eid);
+    if(k) {
+      const spk = getSpeaker(k.speaker_id), msq = getMosque(k.mosque_id);
+      if(document.getElementById('sub-title')) document.getElementById('sub-title').value=k.title;
+      if(document.getElementById('sub-topic')) document.getElementById('sub-topic').value=k.topic;
+      if(document.getElementById('sub-date')) document.getElementById('sub-date').value=k.date;
+      if(document.getElementById('sub-time')) document.getElementById('sub-time').value=k.time;
+      if(document.getElementById('sub-desc')) document.getElementById('sub-desc').value=k.description||'';
+      if(spk){state.selectedSpeakerId=spk.id;document.getElementById('sub-spk-q').value=spk.full_name;document.getElementById('sub-spk-check').style.display='flex';}
+      if(msq){state.selectedMosqueId=msq.id;document.getElementById('sub-mq-q').value=msq.name;document.getElementById('sub-mq-check').style.display='flex';}
+    }
+  } else {
+    state.selectedSpeakerId=null; state.selectedMosqueId=null;
+    ['sub-title','sub-desc'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+    if(document.getElementById('sub-topic')) document.getElementById('sub-topic').value='';
+    if(document.getElementById('sub-spk-q')) document.getElementById('sub-spk-q').value='';
+    if(document.getElementById('sub-mq-q')) document.getElementById('sub-mq-q').value='';
+    if(document.getElementById('sub-spk-check')) document.getElementById('sub-spk-check').style.display='none';
+    if(document.getElementById('sub-mq-check')) document.getElementById('sub-mq-check').style.display='none';
+  }
+}
+
+function onSpeakerInput() {
+  const q = document.getElementById('sub-spk-q').value;
+  const ac = document.getElementById('spk-ac');
+  state.selectedSpeakerId = null;
+  document.getElementById('sub-spk-check').style.display='none';
+  if(q.length<3){ac.classList.remove('open');return;}
+  const matches = DB.speakers.filter(s=>s.full_name.toLowerCase().includes(q.toLowerCase()));
+  ac.innerHTML = matches.map(s=>`<div class="ac-item" onclick="selectSpeaker('${s.id}','${s.full_name.replace(/'/g,"\\'")}')">
+    <div style="font-weight:600">${s.full_name}</div>
+    <div class="ac-item-sub">${s.verified?'✓ Terverifikasi':'Belum terverifikasi'}</div>
+  </div>`).join('')+`<div class="ac-item" style="color:var(--p);font-weight:700;display:flex;align-items:center;gap:6px" onclick="openAddSpeaker()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:14px;height:14px"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Tambah pembicara baru</div>`;
+  ac.classList.add('open');
+}
+function selectSpeaker(id,name) {
+  state.selectedSpeakerId=id;
+  document.getElementById('sub-spk-q').value=name;
+  document.getElementById('sub-spk-check').style.display='flex';
+  document.getElementById('spk-ac').classList.remove('open');
+}
+function openAddSpeaker() {
+  document.getElementById('new-spk-name').value=document.getElementById('sub-spk-q').value;
+  document.getElementById('spk-ac').classList.remove('open');
+  openModal('modal-spk');
+}
+function confirmAddSpeaker() {
+  const name = document.getElementById('new-spk-name').value.trim();
+  if(!name)return;
+  const norm = normName(name);
+  const ex = DB.speakers.find(s=>s.normalized_name===norm);
+  if(ex){selectSpeaker(ex.id,ex.full_name);closeModal('modal-spk');showToast('Pembicara sudah ada, dipilih otomatis','i');return;}
+  const spk = {id:'s'+Date.now(),full_name:name,normalized_name:norm,verified:state.user&&state.user.role==='admin',created_by:(state.user&&state.user.id)||'u1'};
+  DB.speakers.push(spk);
+  selectSpeaker(spk.id,spk.full_name);
+  closeModal('modal-spk');
+  showToast('Pembicara baru ditambahkan!','s');
+  fsSet('speakers',spk.id,spk);
+  if(!(state.user&&state.user.role==='admin')) notifyAdmin('Pembicara baru "'+name+'" ditambahkan oleh '+((state.user&&state.user.name)||'kontributor')+'. Perlu verifikasi.');
+}
+function onMosqueInput() {
+  const q = document.getElementById('sub-mq-q').value;
+  const ac = document.getElementById('mq-ac');
+  state.selectedMosqueId=null;
+  document.getElementById('sub-mq-check').style.display='none';
+  if(q.length<3){ac.classList.remove('open');return;}
+  const matches = DB.mosques.filter(m=>m.name.toLowerCase().includes(q.toLowerCase()));
+  ac.innerHTML = matches.map(m=>`<div class="ac-item" onclick="selectMosque('${m.id}','${m.name.replace(/'/g,"\\'")}')">
+    <div style="font-weight:600">${m.name}</div>
+    <div class="ac-item-sub">${m.city}</div>
+  </div>`).join('')+`<div class="ac-item" style="color:var(--p);font-weight:700;display:flex;align-items:center;gap:6px" onclick="openAddMosque()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:14px;height:14px"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Tambah masjid baru</div>`;
+  ac.classList.add('open');
+}
+function selectMosque(id,name) {
+  state.selectedMosqueId=id;
+  document.getElementById('sub-mq-q').value=name;
+  document.getElementById('sub-mq-check').style.display='flex';
+  document.getElementById('mq-ac').classList.remove('open');
+}
+function openAddMosque() {
+  document.getElementById('new-mq-name').value=document.getElementById('sub-mq-q').value;
+  document.getElementById('mq-ac').classList.remove('open');
+  openModal('modal-mq');
+}
+function confirmAddMosque() {
+  const name=document.getElementById('new-mq-name').value.trim(),city=document.getElementById('new-mq-city').value.trim(),dist=document.getElementById('new-mq-district').value.trim(),addr=document.getElementById('new-mq-addr').value.trim();
+  if(!name||!city){showToast('Nama dan kota wajib diisi','e');return;}
+  const msq={id:'m'+Date.now(),name:name,city:city,district:dist||city,address:addr||(name+', '+city),lat:-6.2+Math.random()*.2,lng:106.8+Math.random()*.2,normalized_name:name.toLowerCase(),verified:state.user&&state.user.role==='admin',created_by:(state.user&&state.user.id)||'u1'};
+  DB.mosques.push(msq);
+  selectMosque(msq.id,msq.name);
+  closeModal('modal-mq');
+  showToast('Masjid baru ditambahkan!','s');
+  fsSet('mosques',msq.id,msq);
+  if(!(state.user&&state.user.role==='admin')) notifyAdmin('Masjid baru "'+name+'" di '+city+' ditambahkan oleh '+((state.user&&state.user.name)||'kontributor')+'. Perlu verifikasi.');
+}
+function doSubmit() {
+  const title=document.getElementById('sub-title').value.trim();
+  const topic=document.getElementById('sub-topic').value;
+  const date=document.getElementById('sub-date').value;
+  const time=document.getElementById('sub-time').value;
+  const desc=document.getElementById('sub-desc').value.trim();
+  if(!title||!topic||!date||!time||!state.selectedSpeakerId||!state.selectedMosqueId){showToast('Isi semua field yang diperlukan','e');return;}
+  const btn=document.getElementById('sub-btn-text');
+  btn.innerHTML='<div class="spin" style="width:20px;height:20px;border-width:2px"></div>';
+  setTimeout(()=>{
+    const eid = state.editKajianId;
+    if(eid) {
+      const k=DB.kajian.find(x=>x.id===eid);
+      if(k){k.title=title;k.topic=topic;k.speaker_id=state.selectedSpeakerId;k.mosque_id=state.selectedMosqueId;k.date=date;k.time=time;k.description=desc;
+      fsSet('kajian',k.id,k);}
+      state.editKajianId=null;
+      showToast('Kajian berhasil diperbarui! ✓','s');
+    } else {
+      const k={id:'k'+Date.now(),title:title,topic:topic,speaker_id:state.selectedSpeakerId,mosque_id:state.selectedMosqueId,date:date,time:time,status:(state.user&&state.user.role==='admin')?'approved':'pending',description:desc,submitted_by:(state.user&&state.user.id)||'u1'};
+      DB.kajian.push(k);
+      fsSet('kajian',k.id,k);      if(state.user&&state.user.role==='admin'){state.notifications.unshift({message:'Kajian "'+title+'" berhasil dipublikasikan!',read:false,timestamp:new Date().toISOString()});notifySubscribers(k);showToast('Kajian berhasil dipublikasikan!','s');}
+      else { showToast('Kajian dikirim untuk review admin.','s'); notifyAdmin('Kajian baru "'+title+'" disubmit oleh '+((state.user&&state.user.name)||'kontributor')+'. Menunggu review.'); }
+    }
+    goBack();
+  },600);
+}
+
+// ══════════════════════════════════════════
+// ADMIN NOTIFICATION HELPER
+// ══════════════════════════════════════════
+function notifyAdmin(message) {
+  const admins = DB.users.filter(u => u.role === 'admin');
+  admins.forEach(admin => {
+    state.notifications.unshift({message, read: false, timestamp: new Date().toISOString(), forUser: admin.id});
+  });
+  if (state.user && fbReady) fsSaveUserData();
+}
+
+// ══════════════════════════════════════════
+// WEB PUSH NOTIFICATION
+// ══════════════════════════════════════════
+function requestNotifPermission() {
+  if (!('Notification' in window)) { showToast('Browser tidak mendukung notifikasi','e'); return; }
+  if (Notification.permission === 'granted') { state.notifPermission = 'granted'; showToast('Notifikasi sudah aktif','s'); return; }
+  if (Notification.permission === 'denied') { showToast('Notifikasi diblokir. Aktifkan di pengaturan browser.','e'); return; }
+  Notification.requestPermission().then(p => {
+    state.notifPermission = p;
+    if (p === 'granted') showToast('Notifikasi diaktifkan! ✓','s');
+    else showToast('Izin notifikasi ditolak','e');
+    if(screenHistory[screenHistory.length-1]==='subs') renderSubscriptions();
+  });
+}
+
+function sendBrowserNotif(title, body) {
+  if (!('Notification' in window) || Notification.permission !== 'granted') return;
+  try { new Notification(title, { body, icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%231B5E38"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>' }); } catch(e) {}
+}
+
+function notifySubscribers(kajian) {
+  const spk = getSpeaker(kajian.speaker_id);
+  const msq = getMosque(kajian.mosque_id);
+  const submitter = DB.users.find(u=>u.id===kajian.submitted_by);
+  let notified = false;
+  // Check speaker subscription
+  if (spk && state.subscriptions.speakers.includes(spk.id)) {
+    const msg = `Kajian baru dari ${spk.full_name}: "${kajian.title}" pada ${fmtDateShort(kajian.date)}`;
+    state.notifications.unshift({message:msg, read:false, timestamp:new Date().toISOString()});
+    sendBrowserNotif('Kajian Baru - ' + spk.full_name, kajian.title);
+    notified = true;
+  }
+  // Check mosque subscription
+  if (msq && state.subscriptions.mosques.includes(msq.id) && !notified) {
+    const msg = `Kajian baru di ${msq.name}: "${kajian.title}" pada ${fmtDateShort(kajian.date)}`;
+    state.notifications.unshift({message:msg, read:false, timestamp:new Date().toISOString()});
+    sendBrowserNotif('Kajian Baru - ' + msq.name, kajian.title);
+    notified = true;
+  }
+  // Check contributor subscription
+  if (submitter && state.subscriptions.contributors.includes(submitter.id) && !notified) {
+    const msg = `${submitter.name} menambahkan kajian baru: "${kajian.title}" pada ${fmtDateShort(kajian.date)}`;
+    state.notifications.unshift({message:msg, read:false, timestamp:new Date().toISOString()});
+    sendBrowserNotif('Kajian Baru dari ' + submitter.name, kajian.title);
+  }
+}
+
+function toggleSub(type, id) {
+  const arr = state.subscriptions[type];
+  const i = arr.indexOf(id);
+  if (i > -1) { arr.splice(i, 1); showToast('Berhenti mengikuti','i'); }
+  else { arr.push(id); showToast('Berhasil mengikuti! ✓','s'); }
+  if (state.user && fbReady) fsSaveUserData();
+  renderSubscriptions();
+}
+
+// ══════════════════════════════════════════
+// SUBSCRIPTIONS SCREEN
+// ══════════════════════════════════════════
+function renderSubscriptions() {
+  const content = document.getElementById('subs-content');
+  if (!content) return;
+  const permStatus = state.notifPermission === 'granted' ? 'Aktif' : state.notifPermission === 'denied' ? 'Diblokir' : 'Belum aktif';
+  const permColor = state.notifPermission === 'granted' ? 'var(--p)' : state.notifPermission === 'denied' ? 'var(--danger)' : 'var(--warn)';
+  let html = `<div style="background:var(--pl);border-radius:14px;padding:14px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between">
+    <div><p style="font-weight:700;font-size:14px">Notifikasi Browser</p><p style="font-size:12px;color:${permColor};font-weight:600;margin-top:2px">${permStatus}</p></div>
+    ${state.notifPermission!=='granted'?`<button class="btn btn-p btn-xs" onclick="requestNotifPermission()">Aktifkan</button>`:''}
+  </div>`;
+
+  // Speakers
+  html += `<p style="font-weight:700;font-size:15px;margin-bottom:10px">Pembicara</p>`;
+  html += DB.speakers.map(s => {
+    const isSub = state.subscriptions.speakers.includes(s.id);
+    const count = DB.kajian.filter(k=>k.speaker_id===s.id).length;
+    return `<div style="display:flex;align-items:center;gap:12px;padding:12px;background:#fff;border-radius:12px;border:1px solid ${isSub?'var(--p)':'var(--border)'};margin-bottom:8px">
+      <div style="flex:1"><p style="font-weight:600;font-size:14px">${s.full_name}</p><p style="font-size:11px;color:var(--muted)">${count} kajian</p></div>
+      <button onclick="toggleSub('speakers','${s.id}')" style="padding:6px 14px;border-radius:8px;font-size:12px;font-weight:700;border:1.5px solid ${isSub?'var(--danger)':'var(--p)'};color:${isSub?'var(--danger)':'var(--p)'};background:${isSub?'#FFEBEE':'var(--pl)'}">${isSub?'Berhenti':'Ikuti'}</button>
+    </div>`;
+  }).join('');
+
+  // Mosques
+  html += `<p style="font-weight:700;font-size:15px;margin:16px 0 10px">Masjid</p>`;
+  html += DB.mosques.map(m => {
+    const isSub = state.subscriptions.mosques.includes(m.id);
+    return `<div style="display:flex;align-items:center;gap:12px;padding:12px;background:#fff;border-radius:12px;border:1px solid ${isSub?'var(--p)':'var(--border)'};margin-bottom:8px">
+      <div style="flex:1"><p style="font-weight:600;font-size:14px">${m.name}</p><p style="font-size:11px;color:var(--muted)">${m.city}</p></div>
+      <button onclick="toggleSub('mosques','${m.id}')" style="padding:6px 14px;border-radius:8px;font-size:12px;font-weight:700;border:1.5px solid ${isSub?'var(--danger)':'var(--p)'};color:${isSub?'var(--danger)':'var(--p)'};background:${isSub?'#FFEBEE':'var(--pl)'}">${isSub?'Berhenti':'Ikuti'}</button>
+    </div>`;
+  }).join('');
+
+  // Contributors
+  const contribs = DB.users.filter(u=>u.role==='contributor'||u.role==='admin');
+  html += `<p style="font-weight:700;font-size:15px;margin:16px 0 10px">Kontributor</p>`;
+  html += contribs.map(u => {
+    const isSub = state.subscriptions.contributors.includes(u.id);
+    const count = DB.kajian.filter(k=>k.submitted_by===u.id).length;
+    return `<div style="display:flex;align-items:center;gap:12px;padding:12px;background:#fff;border-radius:12px;border:1px solid ${isSub?'var(--p)':'var(--border)'};margin-bottom:8px">
+      <div style="width:36px;height:36px;background:var(--pl);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;color:var(--p);flex-shrink:0">${u.name[0]}</div>
+      <div style="flex:1"><p style="font-weight:600;font-size:14px">${u.name} <span style="display:inline-flex;align-items:center;gap:2px;background:#E3F2FD;color:#1565C0;padding:1px 6px;border-radius:20px;font-size:9px;font-weight:700;vertical-align:middle"><svg viewBox="0 0 24 24" fill="#1565C0" stroke="#fff" stroke-width="2.5" style="width:10px;height:10px"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></span></p><p style="font-size:11px;color:var(--muted)">${count} kajian disubmit</p></div>
+      <button onclick="toggleSub('contributors','${u.id}')" style="padding:6px 14px;border-radius:8px;font-size:12px;font-weight:700;border:1.5px solid ${isSub?'var(--danger)':'var(--p)'};color:${isSub?'var(--danger)':'var(--p)'};background:${isSub?'#FFEBEE':'var(--pl)'}">${isSub?'Berhenti':'Ikuti'}</button>
+    </div>`;
+  }).join('');
+
+  content.innerHTML = html;
+}
+
+// ══════════════════════════════════════════
+// ADMIN
+// ══════════════════════════════════════════
+function renderAdmin() {
+  if(!state.user||state.user.role!=='admin') return;
+  const pending=DB.kajian.filter(k=>k.status==='pending');
+  const approved=DB.kajian.filter(k=>k.status==='approved');
+  const uvSp=DB.speakers.filter(s=>!s.verified);
+  const uvMq=DB.mosques.filter(m=>!m.verified);
+  document.getElementById('admin-stats').innerHTML=[
+    {l:'Kajian',v:DB.kajian.length},{l:'Pending',v:pending.length},{l:'Disetujui',v:approved.length},{l:'Users',v:DB.users.length}
+  ].map(function(item){return '<div class="admin-stat"><p style="font-size:22px;font-weight:800;color:#fff">'+item.v+'</p><p style="font-size:10px;color:rgba(255,255,255,.75);font-weight:700">'+item.l+'</p></div>';}).join('');
+  setAdminTab(state.adminTab||'kajian');
+}
+function setAdminTab(tab,btn) {
+  state.adminTab=tab;
+  document.querySelectorAll('#admin-tabs .tab').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  else { var tabMap={'kajian':0,'speakers':1,'mosques':2,'users':3}; var tabEl=document.querySelectorAll('#admin-tabs .tab')[tabMap[tab]]; if(tabEl)tabEl.classList.add('active'); }
+  const c=document.getElementById('admin-content');
+  if(!c)return;
+  if(tab==='kajian'){
+    const pend=DB.kajian.filter(k=>k.status==='pending');
+    c.innerHTML=(pend.length>0?`<p style="font-weight:700;font-size:14px;color:var(--warn);margin-bottom:10px">⏳ Menunggu Review (${pend.length})</p>`+pend.map(k=>{const spk=getSpeaker(k.speaker_id),msq=getMosque(k.mosque_id);return`<div class="card" style="padding:14px;margin-bottom:10px"><p style="font-weight:700;font-size:14px;margin-bottom:4px">${k.title}</p><p style="font-size:12px;color:var(--muted);margin-bottom:10px">${(spk&&spk.full_name)||''} · ${(msq&&msq.name)||''} · ${fmtDateShort(k.date)}</p><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-p btn-xs" onclick="adminApprove('${k.id}')">✓ Setujui</button><button class="btn btn-d btn-xs" onclick="adminReject('${k.id}')">✕ Tolak</button><button onclick="adminEditKajian('${k.id}')" style="border:1.5px solid var(--border);background:#fff;border-radius:8px;padding:5px 10px;font-size:12px;font-weight:600;cursor:pointer">Edit</button><button onclick="confirmDelete('kajian','${k.id}','${encodeURIComponent(k.title)}')" style="border:1.5px solid var(--danger);color:var(--danger);background:#fff;border-radius:8px;padding:5px 10px;font-size:12px;font-weight:600;cursor:pointer">Hapus</button></div></div>`;}).join(''):'')+`<p style="font-weight:700;font-size:14px;margin-bottom:10px;margin-top:${pend.length?16:0}px">Semua Kajian</p>`+DB.kajian.map(k=>{const spk=getSpeaker(k.speaker_id),sc=STATUS[k.status]||STATUS.pending;return`<div class="card" style="padding:12px;margin-bottom:8px"><div style="display:flex;gap:10px;align-items:center;margin-bottom:8px"><div style="flex:1"><p style="font-weight:600;font-size:13px">${k.title}</p><p style="font-size:11px;color:var(--muted)">${(spk&&spk.full_name)||''} · ${fmtDateShort(k.date)}</p></div><span class="tag ${sc.cls}">${sc.label}</span></div><div style="display:flex;gap:8px;flex-wrap:wrap"><select onchange="adminSetStatus('${k.id}',this.value)" style="font-size:11px;border:1px solid var(--border);border-radius:8px;padding:3px 6px;background:#fff;color:var(--text)">${Object.keys(STATUS).map(function(v){return '<option value="'+v+'" '+(k.status===v?'selected':'')+'>'+STATUS[v].label+'</option>';}).join('')}</select><button onclick="adminEditKajian('${k.id}')" style="border:1.5px solid var(--border);background:#fff;border-radius:8px;padding:4px 8px;font-size:11px;font-weight:600;cursor:pointer">Edit</button><button onclick="confirmDelete('kajian','${k.id}','${encodeURIComponent(k.title)}')" style="border:1.5px solid var(--danger);color:var(--danger);background:#fff;border-radius:8px;padding:4px 8px;font-size:11px;font-weight:600;cursor:pointer">Hapus</button></div></div>`;}).join('');
+  }
+  if(tab==='speakers'){
+    const unv=DB.speakers.filter(s=>!s.verified);
+    c.innerHTML=(unv.length>0?`<p style="font-weight:700;font-size:14px;color:var(--warn);margin-bottom:10px">Belum Terverifikasi</p>`+unv.map(s=>`<div class="card" style="padding:12px;margin-bottom:8px;display:flex;align-items:center;gap:10px"><div style="flex:1"><p style="font-weight:600;font-size:14px">${s.full_name}</p><p style="font-size:11px;color:var(--muted)">${s.normalized_name}</p></div><button class="btn btn-p btn-xs" onclick="adminVerifySpk('${s.id}')">Verifikasi</button></div>`).join(''):'')+`<p style="font-weight:700;font-size:14px;margin:${unv.length?16:0}px 0 10px">Semua Pembicara (${DB.speakers.length})</p>`+DB.speakers.map(s=>`<div class="card" style="padding:12px;margin-bottom:8px;display:flex;align-items:center;gap:10px"><div style="flex:1"><p style="font-weight:600;font-size:14px">${s.full_name}</p><p style="font-size:11px;color:var(--muted)">${DB.kajian.filter(k=>k.speaker_id===s.id).length} kajian</p></div><span class="tag ${s.verified?'tag-g':'tag-x'}">${s.verified?'✓ Verified':'Belum'}</span><button onclick="confirmDelete('speaker','${s.id}','${encodeURIComponent(s.full_name)}')" style="border:1.5px solid var(--danger);color:var(--danger);background:#fff;border-radius:8px;padding:4px 8px;font-size:11px;font-weight:600;cursor:pointer;flex-shrink:0">Hapus</button></div>`).join('');
+  }
+  if(tab==='mosques'){
+    c.innerHTML=DB.mosques.map(m=>`<div class="card" style="padding:12px;margin-bottom:8px;display:flex;align-items:center;gap:10px"><div style="flex:1"><p style="font-weight:600;font-size:14px">${m.name}</p><p style="font-size:11px;color:var(--muted)">${m.city}</p></div>${!m.verified?`<button class="btn btn-p btn-xs" onclick="adminVerifyMq('${m.id}')">Verifikasi</button>`:`<span class="tag tag-g">✓</span>`}<button onclick="confirmDelete('mosque','${m.id}','${encodeURIComponent(m.name)}')" style="border:1.5px solid var(--danger);color:var(--danger);background:#fff;border-radius:8px;padding:4px 8px;font-size:11px;font-weight:600;cursor:pointer;flex-shrink:0">Hapus</button></div>`).join('');
+  }
+  if(tab==='users'){
+    c.innerHTML=`<p style="font-weight:700;font-size:14px;margin-bottom:10px">Daftar Pengguna (${DB.users.length})</p>`+DB.users.map(u=>`<div class="card" style="padding:12px;margin-bottom:8px;display:flex;align-items:center;gap:10px"><div style="width:36px;height:36px;background:var(--pl);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;color:var(--p);flex-shrink:0">${u.name[0]}</div><div style="flex:1"><p style="font-weight:600;font-size:14px">${u.name}</p><p style="font-size:11px;color:var(--muted)">${u.email}</p></div><select onchange="adminSetRole('${u.id}',this.value)" style="font-size:11px;border:1px solid var(--border);border-radius:8px;padding:3px 6px;background:#fff"><option value="user" ${u.role==='user'?'selected':''}>user</option><option value="contributor" ${u.role==='contributor'?'selected':''}>contributor</option><option value="admin" ${u.role==='admin'?'selected':''}>admin</option></select></div>`).join('');
+  }
+}
+function adminApprove(id){const k=DB.kajian.find(x=>x.id===id);if(k){k.status='approved';fsSet('kajian',k.id,k);state.notifications.unshift({message:`Kajian "${k.title}" telah disetujui!`,read:false,timestamp:new Date().toISOString()});notifySubscribers(k);fsSaveUserData();showToast('Kajian disetujui!','s');renderAdmin();}}
+function adminReject(id){const k=DB.kajian.find(x=>x.id===id);if(k){k.status='cancelled';fsSet('kajian',k.id,k);showToast('Kajian ditolak','e');renderAdmin();}}
+function adminSetStatus(id,s){const k=DB.kajian.find(x=>x.id===id);if(k){k.status=s;fsSet('kajian',k.id,k);showToast('Status diperbarui','s');renderAdmin();}}
+function adminVerifySpk(id){const s=DB.speakers.find(x=>x.id===id);if(s){s.verified=true;fsSet('speakers',s.id,s);showToast('Pembicara diverifikasi!','s');renderAdmin();}}
+function adminVerifyMq(id){const m=DB.mosques.find(x=>x.id===id);if(m){m.verified=true;fsSet('mosques',m.id,m);showToast('Masjid diverifikasi!','s');renderAdmin();}}
+
+
+// FIX #2: Hapus data (admin)
+let _delPending = {type:'',id:''};
+function confirmDelete(type, id, name) {
+  _delPending = {type, id};
+  const n = decodeURIComponent(name);
+  const msgs = {
+    kajian: 'Hapus kajian <strong>"' + n + '"</strong>? Data akan hilang permanen.',
+    speaker: 'Hapus pembicara <strong>"' + n + '"</strong>?',
+    mosque: 'Hapus masjid <strong>"' + n + '"</strong>?'
+  };
+  document.getElementById('del-confirm-msg').innerHTML = msgs[type]||'Data akan dihapus permanen.';
+  document.getElementById('del-confirm-btn').onclick = executeDelete;
+  openModal('modal-del');
+}
+function executeDelete() {
+  const {type,id} = _delPending;
+  if(type==='kajian'){const i=DB.kajian.findIndex(x=>x.id===id);if(i>-1){DB.kajian.splice(i,1);fsDel('kajian',id);showToast('Kajian dihapus','s');}}
+  if(type==='speaker'){const i=DB.speakers.findIndex(x=>x.id===id);if(i>-1){DB.speakers.splice(i,1);fsDel('speakers',id);showToast('Pembicara dihapus','s');}}
+  if(type==='mosque'){const i=DB.mosques.findIndex(x=>x.id===id);if(i>-1){DB.mosques.splice(i,1);fsDel('mosques',id);showToast('Masjid dihapus','s');}}
+  closeModal('modal-del');
+  const _cur=screenHistory[screenHistory.length-1];
+  if(_cur==='detail'||_cur==='home') { goScreen('home'); }
+  else renderAdmin();
+}
+function adminSetRole(uid,r){const u=DB.users.find(x=>x.id===uid);if(u){u.role=r;fsSet('users',uid,u);if(state.user&&state.user.id===uid)state.user.role=r;showToast(`Role diperbarui ke ${r}`,'s');renderAdmin();}}
+
+// ══════════════════════════════════════════
+// DONATION
+// ══════════════════════════════════════════
+function downloadQR() {
+  const svg = document.getElementById('qr-svg');
+  if(!svg){showToast('Gagal mengunduh QR','e');return;}
+  const data = new XMLSerializer().serializeToString(svg);
+  const canvas=document.createElement('canvas');canvas.width=400;canvas.height=440;
+  const ctx=canvas.getContext('2d');
+  ctx.fillStyle='#fff';ctx.fillRect(0,0,400,440);
+  const img=new Image();
+  const blob=new Blob([data],{type:'image/svg+xml;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  img.onload=()=>{
+    const scale=360/230;
+    ctx.drawImage(img,20,20,360,360);
+    ctx.fillStyle='#1B5E38';ctx.font='bold 14px sans-serif';ctx.textAlign='center';
+    ctx.fillText('Info Kajian — QRIS Donasi',200,410);
+    const a=document.createElement('a');a.download='qris-infokajian.png';a.href=canvas.toDataURL('image/png');a.click();
+    URL.revokeObjectURL(url);
+    showToast('QR Code berhasil diunduh!','s');
+  };
+  img.src=url;
+}
+
+// ══════════════════════════════════════════
+// PROFILE
+// ══════════════════════════════════════════
+function renderProfile() {
+  const heroEl=document.getElementById('profile-hero');
+  const ctaEl=document.getElementById('profile-contrib-cta');
+  const adminBtnEl=document.getElementById('profile-admin-btn');
+  const menuEl=document.getElementById('profile-menu');
+  if(!state.user){
+    heroEl.innerHTML=`<div style="padding:40px 20px;text-align:center">
+      <div style="width:80px;height:80px;background:var(--pl);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px"><svg viewBox="0 0 24 24" fill="none" stroke="var(--p)" stroke-width="1.5" style="width:36px;height:36px"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+      <p style="font-weight:700;font-size:17px;margin-bottom:6px">Belum Login</p>
+      <p style="font-size:14px;color:var(--muted);margin-bottom:24px">Login untuk mengakses semua fitur Info Kajian</p>
+      <button class="btn btn-p" onclick="goScreen('login')" style="margin-bottom:10px">Login</button>
+      <button class="btn btn-o" onclick="goScreen('register')">Daftar Akun</button>
+    </div>`;
+    ctaEl.innerHTML='';adminBtnEl.innerHTML='';
+    menuEl.innerHTML=`<div class="divider"></div><div class="menu-list">${[['Waktu Sholat','prayer'],['Arah Kiblat','qibla'],['Donasi','donation']].map(([l,s])=>`<button class="menu-item" onclick="goScreen('${s}')"><span class="menu-label">${l}</span>${iconSVG('chevron','var(--muted)',16)}</button>`).join('')}</div>`;
+    injectNavs();return;
+  }
+  const u=state.user,roles={user:'Pengguna',contributor:'Kontributor',admin:'Admin'};
+  heroEl.innerHTML=`<div style="background:var(--p);padding:40px 20px 28px">
+    <div style="display:flex;align-items:center;gap:16px">
+      <div style="width:60px;height:60px;background:rgba(255,255,255,.2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:800;color:#fff">${u.name[0]}</div>
+      <div>
+        <p style="font-size:20px;font-weight:800;color:#fff">${u.name}</p>
+        <p style="font-size:13px;color:rgba(255,255,255,.75)">${u.email}</p>
+        <span class="role-pill">${roles[u.role]||u.role}</span>
+      </div>
+    </div>
+  </div>`;
+  ctaEl.innerHTML=u.role==='user'?`<div style="background:linear-gradient(135deg,#1B5E38,#2E7D52);border-radius:16px;padding:18px;margin-bottom:14px">
+    <p style="font-weight:800;font-size:15px;color:#fff;margin-bottom:4px">Jadi Kontributor</p>
+    <p style="font-size:13px;color:rgba(255,255,255,.8);margin-bottom:12px">Daftarkan diri untuk dapat submit jadwal kajian.</p>
+    <button onclick="openModal('modal-contrib')" style="background:#fff;color:var(--p);border-radius:10px;padding:8px 16px;font-weight:700;font-size:13px">Daftar Sekarang</button>
+  </div>`:'';
+  adminBtnEl.innerHTML=u.role==='admin'?`<button class="menu-item card" onclick="goScreen('admin')" style="margin-bottom:12px;border-radius:14px">
+    <div class="menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="var(--p)" stroke-width="2" style="width:18px;height:18px"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+    <div style="flex:1;text-align:left"><p style="font-weight:700;font-size:14px">Admin Dashboard</p><p style="font-size:12px;color:var(--muted)">Kelola kajian, pembicara, pengguna</p></div>
+    ${iconSVG('chevron','var(--muted)',16)}
+  </button>`:'';
+  const extras = u.role==='contributor'||u.role==='admin'?[{l:'Submit Kajian',s:'submit',icon:'<svg viewBox="0 0 24 24" fill="none" stroke="var(--p)" stroke-width="2" style="width:18px;height:18px"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>'}]:[];
+  menuEl.innerHTML=`<div class="menu-list" style="margin-bottom:12px">
+    <button class="menu-item" onclick="requireLogin(()=>goScreen('saved'))"><div class="menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="var(--p)" stroke-width="2" style="width:18px;height:18px"><path d="m19 21-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg></div><span class="menu-label">Kajian Tersimpan</span><span class="menu-badge">${state.bookmarks.length}</span>${iconSVG('chevron','var(--muted)',16)}</button>
+    <button class="menu-item" onclick="requireLogin(()=>goScreen('reminders'))"><div class="menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="var(--p)" stroke-width="2" style="width:18px;height:18px"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div><span class="menu-label">Pengingat Kajian</span><span class="menu-badge">${state.reminders.length}</span>${iconSVG('chevron','var(--muted)',16)}</button>
+    <button class="menu-item" onclick="requireLogin(()=>goScreen('attendance'))"><div class="menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="var(--p)" stroke-width="2" style="width:18px;height:18px"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div><span class="menu-label">Riwayat Kehadiran</span>${iconSVG('chevron','var(--muted)',16)}</button>
+    <button class="menu-item" onclick="requireLogin(()=>goScreen('subs'))"><div class="menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="var(--p)" stroke-width="2" style="width:18px;height:18px"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/><line x1="12" y1="2" x2="12" y2="4"/></svg></div><span class="menu-label">Langganan Notifikasi</span><span class="menu-badge">${state.subscriptions.speakers.length+state.subscriptions.mosques.length+state.subscriptions.contributors.length}</span>${iconSVG('chevron','var(--muted)',16)}</button>
+    ${extras.map(e=>`<button class="menu-item" onclick="goScreen('${e.s}')"><div class="menu-icon">${e.icon}</div><span class="menu-label">${e.l}</span>${iconSVG('chevron','var(--muted)',16)}</button>`).join('')}
+    <button class="menu-item" onclick="goScreen('donation')"><div class="menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="var(--p)" stroke-width="2" style="width:18px;height:18px"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></div><span class="menu-label">Donasi</span>${iconSVG('chevron','var(--muted)',16)}</button>
+  </div>
+  <div class="menu-list" style="margin-bottom:12px">
+    <button class="menu-item" onclick="goScreen('prayer')"><span class="menu-label">Waktu Sholat</span>${iconSVG('chevron','var(--muted)',16)}</button>
+    <button class="menu-item" onclick="goScreen('qibla')"><span class="menu-label">Arah Kiblat</span>${iconSVG('chevron','var(--muted)',16)}</button>
+  </div>
+  <div class="menu-list">
+    <button class="menu-item" onclick="doLogout()"><div class="menu-icon" style="background:#FFEBEE"><svg viewBox="0 0 24 24" fill="none" stroke="var(--danger)" stroke-width="2" style="width:18px;height:18px"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></div><span class="menu-label" style="color:var(--danger)">Keluar</span></button>
+  </div>
+  <p style="text-align:center;font-size:12px;color:var(--muted);margin-top:20px;padding-bottom:8px">Info Kajian v1.0.0 · Made with ❤️ for the Ummah</p>`;
+  injectNavs();
+}
+
+// ══════════════════════════════════════════
+// AUTH
+// ══════════════════════════════════════════
+function fillLogin(email) { document.getElementById('login-email').value=email; document.getElementById('login-pass').value='demo123'; }
+function doLogin() {
+  const email=document.getElementById('login-email').value.trim();
+  const pass=document.getElementById('login-pass').value;
+  if(!email||!pass){showToast('Isi semua field','e');return;}
+  const btn=document.getElementById('login-btn-text');
+  btn.innerHTML='<div class="spin" style="width:20px;height:20px;border-width:2px"></div>';
+  if (auth) {
+    auth.signInWithEmailAndPassword(email, pass)
+      .then(async cred => {
+        const uid = cred.user.uid;
+        let u = DB.users.find(x=>x.id===uid);
+        if (!u) {
+          const doc = await db.collection('users').doc(uid).get();
+          if (doc.exists) { var dd3=doc.data(); dd3.id=uid; u=dd3; DB.users.push(u); }
+          else { var isAdmin = email==='syahlanxzaelani@gmail.com'; u = {id:uid,email:email,name:cred.user.displayName||email.split('@')[0],role:isAdmin?'admin':'user',created_at:T}; DB.users.push(u); await fsSet('users',uid,u); }
+        }
+        state.user = u;
+        await fsLoadUserData(uid);
+        showToast(`Selamat datang, ${u.name.split(' ')[0]}!`,'s');
+        goScreen('home'); renderHome();
+        btn.textContent='Masuk';
+      })
+      .catch(err => {
+        const msg = err.code==='auth/user-not-found'||err.code==='auth/wrong-password'||err.code==='auth/invalid-credential' ? 'Email atau password salah' : err.message;
+        showToast(msg,'e');
+        btn.textContent='Masuk';
+      });
+  } else {
+    setTimeout(()=>{
+      const u=DB.users.find(x=>x.email===email&&x.password===pass);
+      if(u){state.user=u;showToast(`Selamat datang, ${u.name.split(' ')[0]}!`,'s');goScreen('home');renderHome();}
+      else{showToast('Email atau password salah','e');}
+      btn.textContent='Masuk';
+    },600);
+  }
+}
+function doRegister() {
+  const name=document.getElementById('reg-name').value.trim();
+  const email=document.getElementById('reg-email').value.trim();
+  const pass=document.getElementById('reg-pass').value;
+  const confirm=document.getElementById('reg-confirm').value;
+  if(!name||!email||!pass){showToast('Isi semua field','e');return;}
+  if(pass!==confirm){showToast('Password tidak cocok','e');return;}
+  if(pass.length<6){showToast('Password minimal 6 karakter','e');return;}
+  const btn=document.getElementById('reg-btn-text');
+  btn.innerHTML='<div class="spin" style="width:20px;height:20px;border-width:2px"></div>';
+  if (auth) {
+    auth.createUserWithEmailAndPassword(email, pass)
+      .then(async cred => {
+        const uid = cred.user.uid;
+        await cred.user.updateProfile({displayName: name});
+        const u = {id:uid,email,name,role:'user',created_at:T};
+        DB.users.push(u);
+        await fsSet('users',uid,u);
+        showToast('Akun berhasil dibuat! Silakan login.','s');
+        await auth.signOut();
+        goScreen('login');
+        btn.textContent='Buat Akun';
+      })
+      .catch(err => {
+        const msg = err.code==='auth/email-already-in-use' ? 'Email sudah terdaftar' : err.message;
+        showToast(msg,'e');
+        btn.textContent='Buat Akun';
+      });
+  } else {
+    setTimeout(()=>{
+      if(DB.users.find(u=>u.email===email)){showToast('Email sudah terdaftar','e');btn.textContent='Buat Akun';return;}
+      DB.users.push({id:'u'+Date.now(),email,password:pass,name,role:'user',created_at:T});
+      showToast('Akun berhasil dibuat! Silakan login.','s');
+      goScreen('login');
+      btn.textContent='Buat Akun';
+    },600);
+  }
+}
+function doLogout() {
+  if (auth) auth.signOut();
+  state.user=null;
+  state.bookmarks=[]; state.reminders=[]; state.attendances=[];
+  state.notifications=[{message:'Selamat datang di Info Kajian!',read:false,timestamp:new Date().toISOString()}];
+  state.subscriptions={speakers:[],mosques:[],contributors:[]};
+  showToast('Berhasil keluar','s'); goScreen('home'); renderHome(); renderProfile();
+}
+function togglePass(id,btn) {
+  const inp=document.getElementById(id);
+  const showing=inp.type==='text';
+  inp.type=showing?'password':'text';
+  btn.innerHTML=showing?`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>`;
+}
+
+// ══════════════════════════════════════════
+// EMPTY STATE
+// ══════════════════════════════════════════
+const EMPTY_ICONS = {
+  book:`<svg viewBox="0 0 24 24" fill="none" stroke="var(--p)" stroke-width="1.5" style="width:32px;height:32px"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>`,
+  bell:`<svg viewBox="0 0 24 24" fill="none" stroke="var(--p)" stroke-width="1.5" style="width:32px;height:32px"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>`,
+  check:`<svg viewBox="0 0 24 24" fill="none" stroke="var(--p)" stroke-width="1.5" style="width:32px;height:32px"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>`,
+  search:`<svg viewBox="0 0 24 24" fill="none" stroke="var(--p)" stroke-width="1.5" style="width:32px;height:32px"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>`,
+};
+function emptyStateHTML(icon, title, sub, btn, action) {
+  return `<div class="empty-state fi"><div class="empty-icon">${EMPTY_ICONS[icon]||EMPTY_ICONS.book}</div><div><p style="font-weight:700;font-size:17px;margin-bottom:6px">${title}</p>${sub?`<p style="font-size:14px;color:var(--muted);line-height:1.5">${sub}</p>`:''}</div>${btn?`<button class="btn btn-p btn-sm" onclick="${action}">${btn}</button>`:''}</div>`;
+}
+
+// ══════════════════════════════════════════
+// CLICK OUTSIDE AC
+// ══════════════════════════════════════════
+document.addEventListener('click', e => {
+  if(!e.target.closest('.ac-wrap')) {
+    document.querySelectorAll('.ac-list').forEach(el=>el.classList.remove('open'));
+  }
+});
+
+// ══════════════════════════════════════════
+// APP INIT
+// ══════════════════════════════════════════
+document.addEventListener('click', e => {
+  if(!e.target.closest('.ac-wrap')) {
+    document.querySelectorAll('.ac-list').forEach(el=>el.classList.remove('open'));
+  }
+});
+
+// Boot
+(async function() {
+  // Fix mobile viewport height (address bar issue)
+  function setVH() {
+    var vh = window.innerHeight * 0.01;
+    document.documentElement.style.setProperty('--vh', vh + 'px');
+    var app = document.getElementById('app');
+    try {
+      if (app && !(CSS && CSS.supports && CSS.supports('height', '100dvh'))) {
+        app.style.height = window.innerHeight + 'px';
+      }
+    } catch(e) {
+      if (app) app.style.height = window.innerHeight + 'px';
+    }
+  }
+  setVH();
+  window.addEventListener('resize', setVH);
+  window.addEventListener('orientationchange', () => setTimeout(setVH, 100));
+
+  goScreen('home');
+  getLocation();
+  if ('Notification' in window) state.notifPermission = Notification.permission;
+
+  if (fbReady) {
+    try {
+      await fsSeedInitialData();
+      await fsLoadAll();
+    } catch(e) { console.warn('Initial load error:', e); }
+    auth.onAuthStateChanged(async user => {
+      if (user) {
+        let u = DB.users.find(x=>x.id===user.uid);
+        if (!u) {
+          try {
+            var doc2 = await db.collection('users').doc(user.uid).get();
+            if (doc2.exists) { var dd2=doc2.data(); dd2.id=user.uid; u=dd2; DB.users.push(u); }
+          } catch(e) {}
+        }
+        if (u) {
+          state.user = u;
+          await fsLoadUserData(user.uid);
+          renderHome();
+          injectNavs();
+        }
+      }
+    });
+  }
+})();
+</script>
+
+<!-- Modal Konfirmasi Hapus (FIX #2) -->
+<div id="modal-del" class="overlay" onclick="closeModal('modal-del')">
+  <div class="sheet" onclick="event.stopPropagation()">
+    <div class="sheet-handle"></div>
+    <div style="text-align:center;padding:0 8px">
+      <div style="width:56px;height:56px;background:#FFEBEE;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 12px">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#C62828" stroke-width="2" style="width:28px;height:28px"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+      </div>
+      <p style="font-weight:700;font-size:17px;margin-bottom:10px">Konfirmasi Hapus</p>
+      <p id="del-confirm-msg" style="font-size:14px;color:var(--muted);line-height:1.65;margin-bottom:20px">Data akan dihapus permanen.</p>
+      <div style="display:flex;gap:10px">
+        <button class="btn btn-o" onclick="closeModal('modal-del')">Batal</button>
+        <button id="del-confirm-btn" class="btn btn-d">Hapus</button>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>
