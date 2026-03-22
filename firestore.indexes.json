@@ -1,0 +1,26 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "userData",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "subscriptions.speakers", "arrayConfig": "CONTAINS" }
+      ]
+    },
+    {
+      "collectionGroup": "userData",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "subscriptions.mosques", "arrayConfig": "CONTAINS" }
+      ]
+    },
+    {
+      "collectionGroup": "userData",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "subscriptions.contributors", "arrayConfig": "CONTAINS" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}
